@@ -1,9 +1,22 @@
 import 'isomorphic-fetch';
-import FetchMock, { FunctionHandlerArguments, TestedUrl } from '../src/yet-another-fetch-mock';
+import MatcherUtils from '../src/match-utils';
+import FetchMock from '../src/yet-another-fetch-mock';
+import { HandlerArgument, RequestUrl } from '../src/types';
+import { findBody, findPathParams } from '../src/utils';
 
 function fetchToJson(url: string, options?: RequestInit) {
   return fetch(url, options).then(resp => resp.json());
 }
+
+describe('utils', () => {
+  it('should return empty params if no url exists', function() {
+    expect(findPathParams('' as RequestUrl, undefined)).toEqual({});
+  });
+
+  it('should return undefind if no body is defined', function() {
+    expect(findBody(null as any, undefined)).toBe(undefined);
+  });
+});
 
 describe('FetchMock', () => {
   let mock: FetchMock;
@@ -25,7 +38,7 @@ describe('FetchMock', () => {
   });
 
   it('should support fallback', done => {
-    mock.get(/.+/, { key: 'value' });
+    mock.get('*', { key: 'value' });
     fetchToJson('/any-url-here').then(json => {
       expect(json.key).toBe('value');
       done();
@@ -34,7 +47,7 @@ describe('FetchMock', () => {
 
   it('should pass along body, path-params and query-params', done => {
     const payload = { payload: 'my custom payload' };
-    mock.post('/test/:id/:app', (args: FunctionHandlerArguments) => {
+    mock.post('/test/:id/:app', (args: HandlerArgument) => {
       expect(args.url).toBe('/test/123/testapp?name=abba&age=99');
       expect(args.method).toBe('POST');
       expect(args.pathParams && (args.pathParams as any).id).toBe('123');
@@ -54,7 +67,7 @@ describe('FetchMock', () => {
   });
 
   it('should pass along non-json body', function(done) {
-    mock.post('/test/:id/:app', (args: FunctionHandlerArguments) => {
+    mock.post('/test/:id/:app', (args: HandlerArgument) => {
       expect(args.body).toBe('randompayload');
       return { key: 'value' };
     });
@@ -68,7 +81,9 @@ describe('FetchMock', () => {
     mock.post('/post', { key: 'post' });
     mock.delete('/delete', { key: 'delete' });
     mock.put('/put', { key: 'put' });
-    mock.mock('HEAD', '/head', { key: 'head' });
+    mock.mock(MatcherUtils.combine(MatcherUtils.method('HEAD'), MatcherUtils.url('/head')), {
+      key: 'head'
+    });
 
     const postReq = fetchToJson('/post', { method: 'POST' }).then(json =>
       expect(json.key).toBe('post')
@@ -87,16 +102,7 @@ describe('FetchMock', () => {
   });
 
   it('should support custom matcher function', function(done) {
-    mock.get(
-      (input: RequestInfo, init?: RequestInit): TestedUrl => {
-        return {
-          test: true,
-          match: null,
-          keys: []
-        };
-      },
-      { key: 'value' }
-    );
+    mock.mock({ test: () => true }, { key: 'value' });
 
     fetchToJson('/test/123/testapp?name=abba&age=99')
       .then(json => expect(json.key).toBe('value'))
