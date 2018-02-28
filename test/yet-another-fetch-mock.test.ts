@@ -9,11 +9,11 @@ function fetchToJson(url: string, options?: RequestInit) {
 }
 
 describe('utils', () => {
-  it('should return empty params if no url exists', function() {
+  it('should return empty params if no url exists', () => {
     expect(findPathParams('' as RequestUrl, undefined)).toEqual({});
   });
 
-  it('should return undefind if no body is defined', function() {
+  it('should return undefind if no body is defined', () => {
     expect(findBody(null as any, undefined)).toBe(undefined);
   });
 });
@@ -28,7 +28,7 @@ describe('FetchMock', () => {
     mock.restore();
   });
 
-  it('should match simple route', function(done) {
+  it('should match simple route', done => {
     mock.get('/test', { key: 'value' });
 
     fetchToJson('/test').then(json => {
@@ -66,7 +66,7 @@ describe('FetchMock', () => {
       .then(() => done());
   });
 
-  it('should pass along non-json body', function(done) {
+  it('should pass along non-json body', done => {
     mock.post('/test/:id/:app', (args: HandlerArgument) => {
       expect(args.body).toBe('randompayload');
       return { key: 'value' };
@@ -77,7 +77,7 @@ describe('FetchMock', () => {
       .then(() => done());
   });
 
-  it('should match other HTTP-verbs', function(done) {
+  it('should match other HTTP-verbs', done => {
     mock.post('/post', { key: 'post' });
     mock.delete('/delete', { key: 'delete' });
     mock.put('/put', { key: 'put' });
@@ -101,7 +101,7 @@ describe('FetchMock', () => {
     Promise.all([postReq, deleteReq, putReq, headReq]).then(() => done());
   });
 
-  it('should support custom matcher function', function(done) {
+  it('should support custom matcher function', done => {
     mock.mock({ test: () => true }, { key: 'value' });
 
     fetchToJson('/test/123/testapp?name=abba&age=99')
@@ -109,7 +109,7 @@ describe('FetchMock', () => {
       .then(() => done());
   });
 
-  it('should should support the Request', function(done) {
+  it('should should support the Request', done => {
     mock.get('/test', { key: 'value' });
     fetch(new Request('/test'))
       .then(resp => resp.json())
@@ -117,13 +117,25 @@ describe('FetchMock', () => {
       .then(() => done());
   });
 
-  it('should throw error if no route matches', function() {
+  it('should throw error if no route matches', () => {
     expect(() => {
       fetchToJson('/test');
     }).toThrow();
   });
 
-  it('should throw on unknown url type', function() {
+  it('should throw on unknown url type', () => {
     expect(() => mock.post(1231 as any, {})).toThrow();
+  });
+
+  it('should support fallback to realFetch', done => {
+    mock.get('/testurl', { key: 'testurl' });
+    mock.get('*', mock.realFetch);
+
+    const mocked = fetchToJson('/testurl').then(json => expect(json.key).toBe('testurl'));
+    const fallback = fetchToJson('https://xkcd.com/info.0.json').then(json =>
+      expect(json.num).toBeDefined()
+    );
+
+    Promise.all([mocked, fallback]).then(() => done());
   });
 });

@@ -18,7 +18,7 @@ import {
 import MatcherUtils from './match-utils';
 
 class FetchMock {
-  private realFetch: FetchMethod;
+  realFetch: FetchMethod;
   private routes: Route[];
   private scope: Window;
 
