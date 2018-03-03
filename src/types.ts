@@ -20,10 +20,6 @@ export interface HandlerArgument {
   method: HttpMethod;
 }
 
-export type FetchMethod = (
-  input: RequestInfo,
-  init?: RequestInit
-) => Promise<Response>;
 export interface RouteMatcher {
   test: (input: RequestInfo, init?: RequestInit) => boolean;
   matcherUrl?: MatcherUrl;
@@ -39,4 +35,8 @@ export type MatcherUrl = Opaque<'MatcherUrl', string>;
 export interface Route {
   matcher: RouteMatcher;
   handler: MockHandlerFunction;
+}
+export interface Configuration {
+  enableFallback: boolean;
+  middleware: (request: HandlerArgument, response: Response) => Response;
 }

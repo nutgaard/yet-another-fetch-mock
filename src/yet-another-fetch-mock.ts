@@ -1,9 +1,8 @@
 import {
-  FetchMethod,
+  Configuration,
   HttpMethod,
   MatcherUrl,
   MockHandler,
-  MockHandlerFunction,
   RequestUrl,
   Route,
   RouteMatcher
@@ -18,20 +17,32 @@ import {
 import MatcherUtils from './matcher-utils';
 import ResponseUtils from './response-utils';
 
+const defaultConfiguration: Configuration = {
+  enableFallback: true,
+  middleware: (request, response) => response
+};
+
 class FetchMock {
-  public realFetch: FetchMethod;
+  private realFetch: (
+    input: RequestInfo,
+    init?: RequestInit
+  ) => Promise<Response>;
+  private configuration: Configuration;
   private routes: Route[];
   private scope: GlobalFetch;
 
-  constructor(scope: GlobalFetch) {
+  constructor(scope: GlobalFetch, configuration: Partial<Configuration>) {
     this.scope = scope;
+    this.configuration = Object.assign({}, defaultConfiguration, configuration);
     this.realFetch = scope.fetch;
     this.routes = [];
     this.scope.fetch = this.fetchproxy.bind(this);
   }
 
-  static init(): FetchMock {
-    return new FetchMock(window);
+  static configure(
+    configuration: Partial<Configuration> = defaultConfiguration
+  ): FetchMock {
+    return new FetchMock(window, configuration);
   }
 
   restore() {
@@ -55,9 +66,7 @@ class FetchMock {
   }
 
   mock(matcher: RouteMatcher, handler: MockHandler) {
-    if (handler === this.realFetch) {
-      this.routes.push({ matcher, handler: ResponseUtils.use(this.realFetch) });
-    } else if (typeof handler === 'function') {
+    if (typeof handler === 'function') {
       this.routes.push({ matcher, handler });
     } else {
       this.routes.push({ matcher, handler: ResponseUtils.json(handler) });
@@ -72,18 +81,38 @@ class FetchMock {
       input,
       init
     );
-    if (typeof matchingRoute === 'undefined') {
-      throw new Error('Matching route not found...');
-    }
-
-    const handler: MockHandlerFunction = matchingRoute.handler;
     const url: RequestUrl = findRequestUrl(input, init);
     const method: HttpMethod = findRequestMethod(input, init);
-    const pathParams = findPathParams(url, matchingRoute.matcher.matcherUrl);
     const queryParams = findQueryParams(url);
     const body = findBody(input, init);
+    let pathParams: object = {};
+    let response: Promise<Response>;
 
-    return handler({ input, init, url, method, pathParams, queryParams, body });
+    if (typeof matchingRoute === 'undefined') {
+      if (this.configuration.enableFallback) {
+        response = this.realFetch(input, init);
+      } else {
+        throw new Error(`Did not find any matching route for url: ${url}`);
+      }
+    } else {
+      pathParams = findPathParams(url, matchingRoute.matcher.matcherUrl);
+      response = matchingRoute.handler({
+        input,
+        init,
+        url,
+        method,
+        pathParams,
+        queryParams,
+        body
+      });
+    }
+
+    return response.then(resp =>
+      this.configuration.middleware(
+        { input, init, url, method, queryParams, pathParams, body },
+        resp
+      )
+    );
   }
 
   private findMatchingRoute(

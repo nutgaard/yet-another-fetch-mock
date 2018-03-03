@@ -22,7 +22,7 @@ describe('utils', () => {
 describe('FetchMock', () => {
   let mock: FetchMock;
   beforeEach(() => {
-    mock = FetchMock.init();
+    mock = FetchMock.configure();
   });
 
   afterEach(() => {
@@ -128,6 +128,9 @@ describe('FetchMock', () => {
   });
 
   it('should throw error if no route matches', () => {
+    mock.restore();
+    FetchMock.configure({ enableFallback: false });
+
     expect(() => {
       fetchToJson('/test');
     }).toThrow();
@@ -139,7 +142,6 @@ describe('FetchMock', () => {
 
   it('should support fallback to realFetch', done => {
     mock.get('/testurl', { key: 'testurl' });
-    mock.get('*', mock.realFetch);
 
     const mocked = fetchToJson('/testurl').then(json =>
       expect(json.key).toBe('testurl')
@@ -149,5 +151,22 @@ describe('FetchMock', () => {
     );
 
     Promise.all([mocked, fallback]).then(() => done());
+  });
+
+  it('should support delayed responses', done => {
+    mock.get('/test', ResponseUtils.delayed(200, { key: 'delayed' }));
+    mock.get(
+      '/test2',
+      ResponseUtils.delayed(200, ResponseUtils.json({ key: 'delayed2' }))
+    );
+    const startTime = new Date().getTime();
+
+    Promise.all([fetchToJson('/test'), fetchToJson('/test2')]).then(json => {
+      const endTime = new Date().getTime();
+      expect(json[0].key).toBe('delayed');
+      expect(json[1].key).toBe('delayed2');
+      expect(endTime - startTime).toBeGreaterThan(200);
+      done();
+    });
   });
 });
