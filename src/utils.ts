@@ -53,7 +53,7 @@ export function findBody(input: RequestInfo, init?: RequestInit) {
   }
 
   try {
-    return JSON.parse(init.body);
+    return JSON.parse(init.body as string);
   } catch (e) {
     return init.body;
   }
