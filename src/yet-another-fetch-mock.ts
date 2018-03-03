@@ -1,9 +1,9 @@
 import {
   FetchMethod,
-  FunctionHandler,
   HttpMethod,
   MatcherUrl,
   MockHandler,
+  MockHandlerFunction,
   RequestUrl,
   Route,
   RouteMatcher
@@ -15,7 +15,8 @@ import {
   findRequestMethod,
   findRequestUrl
 } from './utils';
-import MatcherUtils from './match-utils';
+import * as MatcherUtils from './matcher-utils';
+import * as ResponseUtils from './response-utils';
 
 class FetchMock {
   realFetch: FetchMethod;
@@ -42,26 +43,15 @@ class FetchMock {
     if (typeof matchingRoute === 'undefined') {
       throw new Error('Matching route not found...');
     }
-    const handler: MockHandler = matchingRoute.handler;
-    if (handler === this.realFetch) {
-      const typedHandler: FetchMethod = handler as FetchMethod;
-      return typedHandler(input, init);
-    } else if (typeof handler === 'function') {
-      const typedHandler: FunctionHandler = handler as FunctionHandler;
-      const url: RequestUrl = findRequestUrl(input, init);
-      const method: HttpMethod = findRequestMethod(input, init);
-      const pathParams = findPathParams(url, matchingRoute.matcher.matcherUrl);
-      const queryParams = findQueryParams(url);
-      const body = findBody(input, init);
 
-      const response: Response = new Response(
-        JSON.stringify(typedHandler({ url, method, pathParams, queryParams, body }))
-      );
-      return Promise.resolve(response);
-    } else {
-      const response: Response = new Response(JSON.stringify(handler));
-      return Promise.resolve(response);
-    }
+    const handler: MockHandlerFunction = matchingRoute.handler;
+    const url: RequestUrl = findRequestUrl(input, init);
+    const method: HttpMethod = findRequestMethod(input, init);
+    const pathParams = findPathParams(url, matchingRoute.matcher.matcherUrl);
+    const queryParams = findQueryParams(url);
+    const body = findBody(input, init);
+
+    return handler({ input, init, url, method, pathParams, queryParams, body });
   }
 
   get(url: string, handler: MockHandler): void {
@@ -73,7 +63,7 @@ class FetchMock {
   }
 
   delete(url: string, handler: MockHandler): void {
-    this.mock(MatcherUtils.delete(url as MatcherUrl), handler);
+    this.mock(MatcherUtils.del(url as MatcherUrl), handler);
   }
 
   put(url: string, handler: MockHandler): void {
@@ -81,7 +71,13 @@ class FetchMock {
   }
 
   mock(matcher: RouteMatcher, handler: MockHandler) {
-    this.routes.push({ matcher, handler });
+    if (handler === this.realFetch) {
+      this.routes.push({ matcher, handler: ResponseUtils.use(this.realFetch) });
+    } else if (typeof handler === 'function') {
+      this.routes.push({ matcher, handler });
+    } else {
+      this.routes.push({ matcher, handler: ResponseUtils.json(handler) });
+    }
   }
 
   _findMatchingRoute(input: RequestInfo, init?: RequestInit): Route | undefined {

@@ -13,6 +13,8 @@ export type HttpMethod =
   | 'PATCH';
 
 export interface HandlerArgument {
+  input: RequestInfo;
+  init?: RequestInit;
   body?: object;
   pathParams: object;
   queryParams: object;
@@ -30,12 +32,13 @@ export interface RouteMatcher {
   test: (input: RequestInfo, init?: RequestInit) => boolean;
   matcherUrl?: MatcherUrl;
 }
-export type ValueHandler = object | Promise<Response>;
-export type FunctionHandler = (args: HandlerArgument) => ValueHandler;
-export type MockHandler = FunctionHandler | ValueHandler | FetchMethod;
+
+export type MockHandler = ((args: HandlerArgument) => Promise<Response>) | object;
+export type MockHandlerFunction = (args: HandlerArgument) => Promise<Response>;
 export type RequestUrl = Opaque<'RequestUrl', string>;
 export type MatcherUrl = Opaque<'MatcherUrl', string>;
+
 export interface Route {
   matcher: RouteMatcher;
-  handler: MockHandler;
+  handler: MockHandlerFunction;
 }

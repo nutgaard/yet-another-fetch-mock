@@ -1,5 +1,6 @@
 import 'isomorphic-fetch';
-import MatcherUtils from '../src/match-utils';
+import * as MatcherUtils from './../src/matcher-utils';
+import * as ResponseUtils from './../src/response-utils';
 import FetchMock from '../src/yet-another-fetch-mock';
 import { HandlerArgument, RequestUrl } from '../src/types';
 import { findBody, findPathParams } from '../src/utils';
@@ -55,7 +56,7 @@ describe('FetchMock', () => {
       expect(args.queryParams && (args.queryParams as any).name).toBe('abba');
       expect(args.queryParams && (args.queryParams as any).age).toBe('99');
       expect(args.body).toEqual(payload);
-      return { key: 'value' };
+      return ResponseUtils.jsonPromise({ key: 'value' });
     });
 
     fetchToJson('/test/123/testapp?name=abba&age=99', {
@@ -69,7 +70,7 @@ describe('FetchMock', () => {
   it('should pass along non-json body', done => {
     mock.post('/test/:id/:app', (args: HandlerArgument) => {
       expect(args.body).toBe('randompayload');
-      return { key: 'value' };
+      return ResponseUtils.jsonPromise({ key: 'value' });
     });
 
     fetchToJson('/test/123/testapp?name=abba&age=99', { method: 'POST', body: 'randompayload' })
