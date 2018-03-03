@@ -1,5 +1,3 @@
-import { Key } from 'path-to-regexp';
-
 export type Opaque<K, T> = T & { __TYPE__: K };
 
 export type HttpMethod =
@@ -22,18 +20,18 @@ export interface HandlerArgument {
   method: HttpMethod;
 }
 
-export interface RequestMatchedUrl {
-  test: boolean;
-  match: RegExpExecArray | null;
-  keys: Key[];
-}
-export type FetchMethod = (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+export type FetchMethod = (
+  input: RequestInfo,
+  init?: RequestInit
+) => Promise<Response>;
 export interface RouteMatcher {
   test: (input: RequestInfo, init?: RequestInit) => boolean;
   matcherUrl?: MatcherUrl;
 }
 
-export type MockHandler = ((args: HandlerArgument) => Promise<Response>) | object;
+export type MockHandler =
+  | ((args: HandlerArgument) => Promise<Response>)
+  | object;
 export type MockHandlerFunction = (args: HandlerArgument) => Promise<Response>;
 export type RequestUrl = Opaque<'RequestUrl', string>;
 export type MatcherUrl = Opaque<'MatcherUrl', string>;

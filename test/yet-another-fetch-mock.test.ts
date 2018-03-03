@@ -1,9 +1,9 @@
 import 'isomorphic-fetch';
-import * as MatcherUtils from './../src/matcher-utils';
-import * as ResponseUtils from './../src/response-utils';
+import MatcherUtils from './../src/matcher-utils';
+import ResponseUtils from './../src/response-utils';
 import FetchMock from '../src/yet-another-fetch-mock';
 import { HandlerArgument, RequestUrl } from '../src/types';
-import { findBody, findPathParams } from '../src/utils';
+import { findBody, findPathParams } from '../src/internal-utils';
 
 function fetchToJson(url: string, options?: RequestInit) {
   return fetch(url, options).then(resp => resp.json());
@@ -73,7 +73,10 @@ describe('FetchMock', () => {
       return ResponseUtils.jsonPromise({ key: 'value' });
     });
 
-    fetchToJson('/test/123/testapp?name=abba&age=99', { method: 'POST', body: 'randompayload' })
+    fetchToJson('/test/123/testapp?name=abba&age=99', {
+      method: 'POST',
+      body: 'randompayload'
+    })
       .then(json => expect(json.key).toBe('value'))
       .then(() => done());
   });
@@ -82,9 +85,15 @@ describe('FetchMock', () => {
     mock.post('/post', { key: 'post' });
     mock.delete('/delete', { key: 'delete' });
     mock.put('/put', { key: 'put' });
-    mock.mock(MatcherUtils.combine(MatcherUtils.method('HEAD'), MatcherUtils.url('/head')), {
-      key: 'head'
-    });
+    mock.mock(
+      MatcherUtils.combine(
+        MatcherUtils.method('HEAD'),
+        MatcherUtils.url('/head')
+      ),
+      {
+        key: 'head'
+      }
+    );
 
     const postReq = fetchToJson('/post', { method: 'POST' }).then(json =>
       expect(json.key).toBe('post')
@@ -132,7 +141,9 @@ describe('FetchMock', () => {
     mock.get('/testurl', { key: 'testurl' });
     mock.get('*', mock.realFetch);
 
-    const mocked = fetchToJson('/testurl').then(json => expect(json.key).toBe('testurl'));
+    const mocked = fetchToJson('/testurl').then(json =>
+      expect(json.key).toBe('testurl')
+    );
     const fallback = fetchToJson('https://xkcd.com/info.0.json').then(json =>
       expect(json.num).toBeDefined()
     );

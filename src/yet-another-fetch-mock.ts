@@ -14,16 +14,16 @@ import {
   findQueryParams,
   findRequestMethod,
   findRequestUrl
-} from './utils';
-import * as MatcherUtils from './matcher-utils';
-import * as ResponseUtils from './response-utils';
+} from './internal-utils';
+import MatcherUtils from './matcher-utils';
+import ResponseUtils from './response-utils';
 
 class FetchMock {
-  realFetch: FetchMethod;
+  public realFetch: FetchMethod;
   private routes: Route[];
-  private scope: Window;
+  private scope: GlobalFetch;
 
-  constructor(scope: Window) {
+  constructor(scope: GlobalFetch) {
     this.scope = scope;
     this.realFetch = scope.fetch;
     this.routes = [];
@@ -36,22 +36,6 @@ class FetchMock {
 
   restore() {
     this.scope.fetch = this.realFetch;
-  }
-
-  fetchproxy(input: RequestInfo, init?: RequestInit): Promise<Response> {
-    const matchingRoute: Route | undefined = this._findMatchingRoute(input, init);
-    if (typeof matchingRoute === 'undefined') {
-      throw new Error('Matching route not found...');
-    }
-
-    const handler: MockHandlerFunction = matchingRoute.handler;
-    const url: RequestUrl = findRequestUrl(input, init);
-    const method: HttpMethod = findRequestMethod(input, init);
-    const pathParams = findPathParams(url, matchingRoute.matcher.matcherUrl);
-    const queryParams = findQueryParams(url);
-    const body = findBody(input, init);
-
-    return handler({ input, init, url, method, pathParams, queryParams, body });
   }
 
   get(url: string, handler: MockHandler): void {
@@ -80,7 +64,32 @@ class FetchMock {
     }
   }
 
-  _findMatchingRoute(input: RequestInfo, init?: RequestInit): Route | undefined {
+  private fetchproxy(
+    input: RequestInfo,
+    init?: RequestInit
+  ): Promise<Response> {
+    const matchingRoute: Route | undefined = this.findMatchingRoute(
+      input,
+      init
+    );
+    if (typeof matchingRoute === 'undefined') {
+      throw new Error('Matching route not found...');
+    }
+
+    const handler: MockHandlerFunction = matchingRoute.handler;
+    const url: RequestUrl = findRequestUrl(input, init);
+    const method: HttpMethod = findRequestMethod(input, init);
+    const pathParams = findPathParams(url, matchingRoute.matcher.matcherUrl);
+    const queryParams = findQueryParams(url);
+    const body = findBody(input, init);
+
+    return handler({ input, init, url, method, pathParams, queryParams, body });
+  }
+
+  private findMatchingRoute(
+    input: RequestInfo,
+    init?: RequestInit
+  ): Route | undefined {
     return this.routes.find((route: Route) => {
       return route.matcher.test(input, init);
     });

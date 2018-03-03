@@ -1,63 +1,78 @@
-import { HttpMethod, MatcherUrl, RequestUrl, Route, RouteMatcher } from './types';
-import { findRequestMethod, findRequestUrl } from './utils';
+import { HttpMethod, MatcherUrl, RequestUrl, RouteMatcher } from './types';
+import { findRequestMethod, findRequestUrl } from './internal-utils';
 import pathToRegex, { Key } from 'path-to-regexp';
 
-function httpMethodHelper(matcherUrl: MatcherUrl, httpMethod: HttpMethod): RouteMatcher {
+function httpMethodHelper(
+  matcherUrl: MatcherUrl,
+  httpMethod: HttpMethod
+): RouteMatcher {
   if (typeof matcherUrl === 'string') {
-    return combine(method(httpMethod), url(matcherUrl));
+    return MatcherUtils.combine(
+      MatcherUtils.method(httpMethod),
+      MatcherUtils.url(matcherUrl)
+    );
   } else {
     throw new Error(`Unknown type of matcherUrl: ${typeof matcherUrl}`);
   }
 }
 
-export function combine(...matchers: RouteMatcher[]): RouteMatcher {
-  return {
-    test: (input: RequestInfo, init?: RequestInit) => {
-      return matchers.reduce((status, matcher) => status && matcher.test(input, init), true);
-    },
-    matcherUrl: matchers.map(matcher => matcher.matcherUrl).find(url => !!url)
-  };
-}
+export default class MatcherUtils {
+  static combine(...matchers: RouteMatcher[]): RouteMatcher {
+    return {
+      test: (input: RequestInfo, init?: RequestInit) => {
+        return matchers.reduce(
+          (status, matcher) => status && matcher.test(input, init),
+          true
+        );
+      },
+      matcherUrl: matchers.map(matcher => matcher.matcherUrl).find(url => !!url)
+    };
+  }
 
-export function method(httpMethod: HttpMethod): RouteMatcher {
-  return {
-    test: (input: RequestInfo, init?: RequestInit) => {
-      return httpMethod === findRequestMethod(input, init);
-    }
-  };
-}
-
-export function url(matcherUrl: string): RouteMatcher {
-  return {
-    test: (input: RequestInfo, init?: RequestInit) => {
-      if (matcherUrl === '*') {
-        return true;
+  static method(httpMethod: HttpMethod): RouteMatcher {
+    return {
+      test: (input: RequestInfo, init?: RequestInit) => {
+        return httpMethod === findRequestMethod(input, init);
       }
+    };
+  }
 
-      const url = findRequestUrl(input, init);
-      const urlWithoutQueryParams: RequestUrl = url.split('?')[0] as RequestUrl;
-      const keys: Key[] = [];
-      const matcherRegex: RegExp = pathToRegex(matcherUrl, keys);
-      const match: RegExpExecArray | null = matcherRegex.exec(urlWithoutQueryParams);
+  static url(matcherUrl: string): RouteMatcher {
+    return {
+      test: (input: RequestInfo, init?: RequestInit) => {
+        if (matcherUrl === '*') {
+          return true;
+        }
 
-      return !!match;
-    },
-    matcherUrl: matcherUrl as MatcherUrl
-  };
-}
+        const url = findRequestUrl(input, init);
+        const urlWithoutQueryParams: RequestUrl = url.split(
+          '?'
+        )[0] as RequestUrl;
+        const keys: Key[] = [];
+        const matcherRegex: RegExp = pathToRegex(matcherUrl, keys);
+        const match: RegExpExecArray | null = matcherRegex.exec(
+          urlWithoutQueryParams
+        );
 
-export function get(matcherUrl: MatcherUrl): RouteMatcher {
-  return httpMethodHelper(matcherUrl, 'GET');
-}
+        return !!match;
+      },
+      matcherUrl: matcherUrl as MatcherUrl
+    };
+  }
 
-export function post(matcherUrl: MatcherUrl): RouteMatcher {
-  return httpMethodHelper(matcherUrl, 'POST');
-}
+  static get(matcherUrl: MatcherUrl): RouteMatcher {
+    return httpMethodHelper(matcherUrl, 'GET');
+  }
 
-export function put(matcherUrl: MatcherUrl): RouteMatcher {
-  return httpMethodHelper(matcherUrl, 'PUT');
-}
+  static post(matcherUrl: MatcherUrl): RouteMatcher {
+    return httpMethodHelper(matcherUrl, 'POST');
+  }
 
-export function del(matcherUrl: MatcherUrl): RouteMatcher {
-  return httpMethodHelper(matcherUrl, 'DELETE');
+  static put(matcherUrl: MatcherUrl): RouteMatcher {
+    return httpMethodHelper(matcherUrl, 'PUT');
+  }
+
+  static del(matcherUrl: MatcherUrl): RouteMatcher {
+    return httpMethodHelper(matcherUrl, 'DELETE');
+  }
 }
