@@ -32,7 +32,7 @@ export default class MatcherUtils {
   static method(httpMethod: HttpMethod): RouteMatcher {
     return {
       test: (input: RequestInfo, init?: RequestInit) => {
-        return httpMethod === findRequestMethod(input, init);
+        return httpMethod === findRequestMethod(input, init).toUpperCase();
       }
     };
   }

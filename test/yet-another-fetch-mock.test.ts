@@ -219,4 +219,13 @@ describe('FetchMock', () => {
 
     Promise.all([first, second]).then(() => done());
   });
+
+  it('should support lowercase httpverb', done => {
+    mock.post('/lowercase', { key: 'BIG-CASE' });
+
+    fetchToJson('/lowercase', { method: 'post' }).then(json => {
+      expect(json.key).toBe('BIG-CASE');
+      done();
+    });
+  });
 });
