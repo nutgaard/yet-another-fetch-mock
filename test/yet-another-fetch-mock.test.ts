@@ -169,4 +169,54 @@ describe('FetchMock', () => {
       done();
     });
   });
+
+  it('should support responding with status codes', done => {
+    mock.get('/error', ResponseUtils.statusCode(404));
+
+    fetch('/error').then(resp => {
+      expect(resp.ok).toBe(false);
+      expect(resp.status).toBe(404);
+      done();
+    });
+  });
+
+  it('should be able to combine response utils', done => {
+    mock.get(
+      '/combine',
+      ResponseUtils.combine(
+        ResponseUtils.json({ key: 'value' }),
+        ResponseUtils.statusCode(201)
+      )
+    );
+
+    mock.get(
+      '/combine2',
+      ResponseUtils.combine(
+        ResponseUtils.statusCode(202),
+        { key: 'value2' },
+        ResponseUtils.statusText('Its ok')
+      )
+    );
+
+    const first = fetch('/combine')
+      .then(resp => {
+        expect(resp.status).toBe(201);
+        return resp.json();
+      })
+      .then(json => {
+        expect(json.key).toBe('value');
+      });
+
+    const second = fetch('/combine2')
+      .then(resp => {
+        expect(resp.status).toBe(202);
+        expect(resp.statusText).toBe('Its ok');
+        return resp.json();
+      })
+      .then(json => {
+        expect(json.key).toBe('value2');
+      });
+
+    Promise.all([first, second]).then(() => done());
+  });
 });

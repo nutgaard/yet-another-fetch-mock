@@ -25,10 +25,19 @@ export interface RouteMatcher {
   matcherUrl?: MatcherUrl;
 }
 
+export interface ResponseData {
+  body?: any;
+  headers?: HeadersInit;
+  status?: number;
+  statusText?: string;
+}
+
 export type MockHandler =
-  | ((args: HandlerArgument) => Promise<Response>)
+  | ((args: HandlerArgument) => Promise<ResponseData>)
   | object;
-export type MockHandlerFunction = (args: HandlerArgument) => Promise<Response>;
+export type MockHandlerFunction = (
+  args: HandlerArgument
+) => Promise<ResponseData>;
 export type RequestUrl = Opaque<'RequestUrl', string>;
 export type MatcherUrl = Opaque<'MatcherUrl', string>;
 
@@ -38,5 +47,8 @@ export interface Route {
 }
 export interface Configuration {
   enableFallback: boolean;
-  middleware: (request: HandlerArgument, response: Response) => Response;
+  middleware: (
+    request: HandlerArgument,
+    response: ResponseData
+  ) => ResponseData;
 }

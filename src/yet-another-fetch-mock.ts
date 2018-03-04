@@ -4,6 +4,7 @@ import {
   MatcherUrl,
   MockHandler,
   RequestUrl,
+  ResponseData,
   Route,
   RouteMatcher
 } from './types';
@@ -86,7 +87,7 @@ class FetchMock {
     const queryParams = findQueryParams(url);
     const body = findBody(input, init);
     let pathParams: object = {};
-    let response: Promise<Response>;
+    let response: Promise<ResponseData>;
 
     if (typeof matchingRoute === 'undefined') {
       if (this.configuration.enableFallback) {
@@ -107,12 +108,21 @@ class FetchMock {
       });
     }
 
-    return response.then(resp =>
-      this.configuration.middleware(
-        { input, init, url, method, queryParams, pathParams, body },
-        resp
+    return response
+      .then(resp =>
+        this.configuration.middleware(
+          { input, init, url, method, queryParams, pathParams, body },
+          resp
+        )
       )
-    );
+      .then(
+        (data: ResponseData) =>
+          new Response(data.body, {
+            status: data.status,
+            statusText: data.statusText,
+            headers: data.headers
+          })
+      );
   }
 
   private findMatchingRoute(
