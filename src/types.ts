@@ -13,9 +13,9 @@ export type HttpMethod =
 export interface HandlerArgument {
   input: RequestInfo;
   init?: RequestInit;
-  body?: object;
-  pathParams: object;
-  queryParams: object;
+  body?: any;
+  pathParams: any;
+  queryParams: any;
   url: RequestUrl;
   method: HttpMethod;
 }
