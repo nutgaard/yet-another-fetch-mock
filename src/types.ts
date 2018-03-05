@@ -50,5 +50,5 @@ export interface Configuration {
   middleware: (
     request: HandlerArgument,
     response: ResponseData
-  ) => ResponseData;
+  ) => ResponseData | Promise<ResponseData>;
 }
