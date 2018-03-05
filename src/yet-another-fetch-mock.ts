@@ -91,7 +91,7 @@ class FetchMock {
 
     if (typeof matchingRoute === 'undefined') {
       if (this.configuration.enableFallback) {
-        response = this.realFetch(input, init);
+        response = this.realFetch.call(this.scope, input, init);
       } else {
         throw new Error(`Did not find any matching route for url: ${url}`);
       }
