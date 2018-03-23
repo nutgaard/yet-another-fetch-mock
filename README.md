@@ -49,6 +49,11 @@ mock.mock(
   ),
   ResponseUtils.delayed(1000, { data: 'lots of data' })
 );
+
+// Combining resultsUtils
+mock.get('/test/:id', ResponseUtils.delayed(1000, (args: HandlerArgument) => {
+  return ResponseUtils.jsonPromise({ requestId: args.pathParams.id });
+}));
 ```
 
 #### Types

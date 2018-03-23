@@ -170,6 +170,20 @@ describe('FetchMock', () => {
     });
   });
 
+  it('should supportd combinding delay and handlerargs', done => {
+    mock.get(
+      '/test/:id',
+      ResponseUtils.delayed(1000, (args: HandlerArgument) => {
+        return ResponseUtils.jsonPromise({ requestId: args.pathParams.id });
+      })
+    );
+
+    fetchToJson('/test/1234').then(json => {
+      expect(json.requestId).toBe('1234');
+      done();
+    });
+  });
+
   it('should support responding with status codes', done => {
     mock.get('/error', ResponseUtils.statusCode(404));
 
