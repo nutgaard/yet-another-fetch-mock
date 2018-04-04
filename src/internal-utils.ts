@@ -1,11 +1,17 @@
 import * as queryString from 'query-string';
-import { HttpMethod, MatcherUrl, RequestUrl } from './types';
+import {
+  HandlerArgument,
+  HttpMethod,
+  MatcherUrl,
+  MockHandler,
+  MockHandlerFunction,
+  RequestUrl,
+  ResponseData
+} from './types';
 import pathToRegex, { Key } from 'path-to-regexp';
+import ResponseUtils from './response-utils';
 
-export function findRequestUrl(
-  input: RequestInfo,
-  init?: RequestInit
-): RequestUrl {
+export function findRequestUrl(input: RequestInfo, init?: RequestInit): RequestUrl {
   if (typeof input === 'string') {
     return input as RequestUrl;
   } else {
@@ -13,10 +19,7 @@ export function findRequestUrl(
   }
 }
 
-export function findRequestMethod(
-  input: RequestInfo,
-  init?: RequestInit
-): HttpMethod {
+export function findRequestMethod(input: RequestInfo, init?: RequestInit): HttpMethod {
   if (typeof input === 'string') {
     return ((init && init.method) || 'GET') as HttpMethod;
   } else {
@@ -24,22 +27,15 @@ export function findRequestMethod(
   }
 }
 
-export function findPathParams(
-  requestUrl: RequestUrl,
-  matcherUrl?: MatcherUrl
-): object {
+export function findPathParams(requestUrl: RequestUrl, matcherUrl?: MatcherUrl): object {
   if (!matcherUrl) {
     return {};
   }
 
-  const urlWithoutQueryParams: RequestUrl = requestUrl.split(
-    '?'
-  )[0] as RequestUrl;
+  const urlWithoutQueryParams: RequestUrl = requestUrl.split('?')[0] as RequestUrl;
   const keys: Key[] = [];
   const matcherRegex: RegExp = pathToRegex(matcherUrl, keys);
-  const match: RegExpExecArray | null = matcherRegex.exec(
-    urlWithoutQueryParams
-  );
+  const match: RegExpExecArray | null = matcherRegex.exec(urlWithoutQueryParams);
 
   const sources = keys.map((key, index) => ({
     [key.name]: match && match[index + 1]
@@ -60,5 +56,27 @@ export function findBody(input: RequestInfo, init?: RequestInit) {
     return JSON.parse(init.body as string);
   } catch (e) {
     return init.body;
+  }
+}
+
+export function testPromise(data: any): boolean {
+  return Promise.resolve(data) == data; // tslint:disable-line
+}
+
+export function toMockHandlerFunction(handler: MockHandler): MockHandlerFunction {
+  if (typeof handler === 'function') {
+    return (args: HandlerArgument) =>
+      new Promise<ResponseData>((resolve, reject) => {
+        const result = handler(args);
+        const isPromise = testPromise(result);
+        if (isPromise) {
+          resolve(result as Promise<ResponseData>);
+        } else {
+          const response: ResponseData = { body: JSON.stringify(result) } as ResponseData;
+          resolve(response);
+        }
+      });
+  } else {
+    return ResponseUtils.json(handler);
   }
 }

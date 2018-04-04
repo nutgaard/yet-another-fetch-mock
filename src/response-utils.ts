@@ -1,27 +1,37 @@
 import {
   HandlerArgument,
+  JSONValue,
   MockHandler,
   MockHandlerFunction,
   ResponseData
 } from './types';
+import { testPromise } from './internal-utils';
 
-function execHandler(
-  handler: MockHandler,
-  args: HandlerArgument
-): Promise<ResponseData> {
+function execHandler(handler: MockHandler, args: HandlerArgument): Promise<ResponseData> {
   if (typeof handler === 'function') {
-    return handler(args);
+    let result = handler(args);
+    const isPromise = testPromise(result);
+    if (isPromise) {
+      return result as Promise<ResponseData>;
+    } else {
+      return Promise.resolve({ body: result } as ResponseData);
+    }
   } else {
     return ResponseUtils.jsonPromise(handler);
   }
 }
 
-function unwrap(
-  args: HandlerArgument
-): (handler: MockHandler) => Promise<ResponseData> {
+function unwrap(args: HandlerArgument): (handler: MockHandler) => Promise<ResponseData> {
   return (handler: MockHandler) => {
     if (typeof handler === 'function') {
-      return handler(args);
+      const result = handler(args);
+      const isPromise = testPromise(result);
+
+      if (isPromise) {
+        return result as Promise<ResponseData>;
+      }
+
+      return Promise.resolve({ body: result } as ResponseData);
     } else {
       return ResponseUtils.jsonPromise(handler);
     }
@@ -34,16 +44,16 @@ function merge(into: ResponseData, data: ResponseData): ResponseData {
     status: into.status || data.status,
     statusText: into.statusText || data.statusText,
     headers: Object.assign({}, data.headers, into.headers)
-  };
+  } as ResponseData;
 }
 
 export default class ResponseUtils {
-  static json(json: object): MockHandlerFunction {
+  static json(json: JSONValue): MockHandlerFunction {
     return () => ResponseUtils.jsonPromise(json);
   }
 
   static jsonPromise(json: MockHandler): Promise<ResponseData> {
-    const response: ResponseData = { body: JSON.stringify(json) };
+    const response: ResponseData = { body: JSON.stringify(json) } as ResponseData;
     return Promise.resolve(response);
   }
 
@@ -57,23 +67,23 @@ export default class ResponseUtils {
 
   static statusCode(status: number): MockHandler {
     return (args: HandlerArgument) => {
-      const response: ResponseData = { status };
+      const response: ResponseData = { status } as ResponseData;
       return Promise.resolve(response);
     };
   }
 
   static statusText(statusText: string): MockHandler {
     return (args: HandlerArgument) => {
-      const response: ResponseData = { statusText };
+      const response: ResponseData = { statusText } as ResponseData;
       return Promise.resolve(response);
     };
   }
 
   static combine(...handlers: MockHandler[]): MockHandler {
     return (args: HandlerArgument) => {
-      return Promise.all(
-        handlers.map(unwrap(args))
-      ).then((data: ResponseData[]) => data.reduce(merge, {}));
+      return Promise.all(handlers.map(unwrap(args))).then((data: ResponseData[]) =>
+        data.reduce(merge, {} as ResponseData)
+      );
     };
   }
 }

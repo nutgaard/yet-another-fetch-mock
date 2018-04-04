@@ -13,10 +13,10 @@ import {
   findPathParams,
   findQueryParams,
   findRequestMethod,
-  findRequestUrl
+  findRequestUrl,
+  toMockHandlerFunction
 } from './internal-utils';
 import MatcherUtils from './matcher-utils';
-import ResponseUtils from './response-utils';
 
 const defaultConfiguration: Configuration = {
   enableFallback: true,
@@ -24,10 +24,7 @@ const defaultConfiguration: Configuration = {
 };
 
 class FetchMock {
-  private realFetch: (
-    input: RequestInfo,
-    init?: RequestInit
-  ) => Promise<Response>;
+  private realFetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
   private configuration: Configuration;
   private routes: Route[];
   private scope: GlobalFetch;
@@ -40,9 +37,7 @@ class FetchMock {
     this.scope.fetch = this.fetchproxy.bind(this);
   }
 
-  static configure(
-    configuration: Partial<Configuration> = defaultConfiguration
-  ): FetchMock {
+  static configure(configuration: Partial<Configuration> = defaultConfiguration): FetchMock {
     return new FetchMock(window, configuration);
   }
 
@@ -67,21 +62,11 @@ class FetchMock {
   }
 
   mock(matcher: RouteMatcher, handler: MockHandler) {
-    if (typeof handler === 'function') {
-      this.routes.push({ matcher, handler });
-    } else {
-      this.routes.push({ matcher, handler: ResponseUtils.json(handler) });
-    }
+    this.routes.push({ matcher, handler: toMockHandlerFunction(handler) });
   }
 
-  private fetchproxy(
-    input: RequestInfo,
-    init?: RequestInit
-  ): Promise<Response> {
-    const matchingRoute: Route | undefined = this.findMatchingRoute(
-      input,
-      init
-    );
+  private fetchproxy(input: RequestInfo, init?: RequestInit): Promise<Response> {
+    const matchingRoute: Route | undefined = this.findMatchingRoute(input, init);
     const url: RequestUrl = findRequestUrl(input, init);
     const method: HttpMethod = findRequestMethod(input, init);
     const queryParams = findQueryParams(url);
@@ -121,10 +106,7 @@ class FetchMock {
       );
   }
 
-  private findMatchingRoute(
-    input: RequestInfo,
-    init?: RequestInit
-  ): Route | undefined {
+  private findMatchingRoute(input: RequestInfo, init?: RequestInit): Route | undefined {
     return this.routes.find((route: Route) => {
       return route.matcher.test(input, init);
     });

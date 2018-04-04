@@ -1,5 +1,9 @@
 export type Opaque<K, T> = T & { __TYPE__: K };
 
+export type JSONValue = string | number | boolean | JSONObject | JSONArray;
+export type JSONObject = { [member: string]: JSONValue };
+export interface JSONArray extends Array<JSONValue> {}
+
 export type HttpMethod =
   | 'GET'
   | 'HEAD'
@@ -34,10 +38,10 @@ export interface ResponseData {
 
 export type MockHandler =
   | ((args: HandlerArgument) => Promise<ResponseData>)
-  | object;
-export type MockHandlerFunction = (
-  args: HandlerArgument
-) => Promise<ResponseData>;
+  | ((args: HandlerArgument) => JSONValue)
+  | JSONValue;
+
+export type MockHandlerFunction = (args: HandlerArgument) => Promise<ResponseData>;
 export type RequestUrl = Opaque<'RequestUrl', string>;
 export type MatcherUrl = Opaque<'MatcherUrl', string>;
 

@@ -85,15 +85,9 @@ describe('FetchMock', () => {
     mock.post('/post', { key: 'post' });
     mock.delete('/delete', { key: 'delete' });
     mock.put('/put', { key: 'put' });
-    mock.mock(
-      MatcherUtils.combine(
-        MatcherUtils.method('HEAD'),
-        MatcherUtils.url('/head')
-      ),
-      {
-        key: 'head'
-      }
-    );
+    mock.mock(MatcherUtils.combine(MatcherUtils.method('HEAD'), MatcherUtils.url('/head')), {
+      key: 'head'
+    });
 
     const postReq = fetchToJson('/post', { method: 'POST' }).then(json =>
       expect(json.key).toBe('post')
@@ -143,9 +137,7 @@ describe('FetchMock', () => {
   it('should support fallback to realFetch', done => {
     mock.get('/testurl', { key: 'testurl' });
 
-    const mocked = fetchToJson('/testurl').then(json =>
-      expect(json.key).toBe('testurl')
-    );
+    const mocked = fetchToJson('/testurl').then(json => expect(json.key).toBe('testurl'));
     const fallback = fetchToJson('https://xkcd.com/info.0.json').then(json =>
       expect(json.num).toBeDefined()
     );
@@ -155,10 +147,7 @@ describe('FetchMock', () => {
 
   it('should support delayed responses', done => {
     mock.get('/test', ResponseUtils.delayed(200, { key: 'delayed' }));
-    mock.get(
-      '/test2',
-      ResponseUtils.delayed(200, ResponseUtils.json({ key: 'delayed2' }))
-    );
+    mock.get('/test2', ResponseUtils.delayed(200, ResponseUtils.json({ key: 'delayed2' })));
     const startTime = new Date().getTime();
 
     Promise.all([fetchToJson('/test'), fetchToJson('/test2')]).then(json => {
@@ -197,10 +186,7 @@ describe('FetchMock', () => {
   it('should be able to combine response utils', done => {
     mock.get(
       '/combine',
-      ResponseUtils.combine(
-        ResponseUtils.json({ key: 'value' }),
-        ResponseUtils.statusCode(201)
-      )
+      ResponseUtils.combine(ResponseUtils.json({ key: 'value' }), ResponseUtils.statusCode(201))
     );
 
     mock.get(
@@ -236,6 +222,17 @@ describe('FetchMock', () => {
 
   it('should support lowercase httpverb', done => {
     mock.post('/lowercase', { key: 'BIG-CASE' });
+
+    fetchToJson('/lowercase', { method: 'post' }).then(json => {
+      expect(json.key).toBe('BIG-CASE');
+      done();
+    });
+  });
+
+  it('should jsonValue as response in MockHandler', done => {
+    const myResponse = ({ queryParams }: HandlerArgument) => ({ key: 'BIG-CASE' });
+
+    mock.post('/lowercase', myResponse);
 
     fetchToJson('/lowercase', { method: 'post' }).then(json => {
       expect(json.key).toBe('BIG-CASE');
