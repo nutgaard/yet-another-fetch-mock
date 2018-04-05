@@ -49,10 +49,12 @@ export interface Route {
   matcher: RouteMatcher;
   handler: MockHandlerFunction;
 }
+
+export type Middleware = (
+  request: HandlerArgument,
+  response: ResponseData
+) => ResponseData | Promise<ResponseData>;
 export interface Configuration {
   enableFallback: boolean;
-  middleware: (
-    request: HandlerArgument,
-    response: ResponseData
-  ) => ResponseData | Promise<ResponseData>;
+  middleware: Middleware;
 }
