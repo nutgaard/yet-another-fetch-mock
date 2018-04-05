@@ -14,14 +14,26 @@ npm install yet-another-fetch-mock --save-dev
 ### Setup 
 
 ```javascript
+const loggingMiddleware: Middleware = (request, response) => {
+  console.log('response', response);
+  return response;
+}
+
+
 const mock = FetchMock.configure({
-  enableFallback: true,
-  middleware: (requestArgs, response) => {
-    console.log('response', response);
-    return response;
-  }
+  enableFallback: true, // default: true
+  middleware: loggingMiddleware // default: (req, resp) => resp
+});
+
+
+const delayedErrorMock = FetchMock.configure({
+  middleware: MiddlewareUtils.combine(
+    MiddlewareUtils.delayMiddleware(200),
+    MiddlewareUtils.failurerateMiddleware(0.2)
+  )
 });
 ```
+
 
 ### Examples
 ```typescript
