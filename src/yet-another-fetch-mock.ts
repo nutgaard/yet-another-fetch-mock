@@ -101,7 +101,7 @@ class FetchMock {
         )
       )
       .then(
-        ({ body, status, statusText, headers }: ResponseData) =>
+        ({ body, status = 200, statusText = 'OK', headers = {} }: ResponseData) =>
           new Response(body, { status, statusText, headers })
       );
   }

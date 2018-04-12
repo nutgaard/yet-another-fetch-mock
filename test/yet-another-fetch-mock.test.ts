@@ -48,6 +48,16 @@ describe('FetchMock', () => {
     });
   });
 
+  it('should should set statusCode and statusText', done => {
+    mock.get('/status', { key: 'value' });
+    fetch('/status').then(resp => {
+      expect(resp.status).toBe(200);
+      expect(resp.statusText).toBe('OK');
+      expect(resp.ok).toBe(true);
+      done();
+    });
+  });
+
   it('should pass along body, path-params and query-params', done => {
     const payload = { payload: 'my custom payload' };
     mock.post('/test/:id/:app', (args: HandlerArgument) => {
@@ -129,7 +139,7 @@ describe('FetchMock', () => {
 
     expect(() => {
       fetchToJson('/test');
-    }).toThrow();
+    }).toThrow(`Did not find any matching route for url: /test`);
   });
 
   it('should throw on unknown url type', () => {
