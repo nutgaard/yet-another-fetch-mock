@@ -1,7 +1,7 @@
 import 'isomorphic-fetch';
 import MatcherUtils from './../src/matcher-utils';
 import ResponseUtils from './../src/response-utils';
-import FetchMock from '../src/yet-another-fetch-mock';
+import FetchMock, { JSONValue } from '../src/yet-another-fetch-mock';
 import { HandlerArgument, RequestUrl, ResponseData } from '../src/types';
 import { findBody, findPathParams } from '../src/internal-utils';
 import MiddlewareUtils from '../src/middleware-utils';
@@ -97,9 +97,15 @@ describe('FetchMock', () => {
     mock.post('/post', { key: 'post' });
     mock.delete('/delete', { key: 'delete' });
     mock.put('/put', { key: 'put' });
-    mock.mock(MatcherUtils.combine(MatcherUtils.method('HEAD'), MatcherUtils.url('/head')), {
-      key: 'head'
-    });
+    mock.mock(
+      MatcherUtils.combine(
+        MatcherUtils.method('HEAD'),
+        MatcherUtils.url('/head')
+      ),
+      {
+        key: 'head'
+      }
+    );
 
     const postReq = fetchToJson('/post', { method: 'POST' }).then(json =>
       expect(json.key).toBe('post')
@@ -149,7 +155,9 @@ describe('FetchMock', () => {
   it('should support fallback to realFetch', done => {
     mock.get('/testurl', { key: 'testurl' });
 
-    const mocked = fetchToJson('/testurl').then(json => expect(json.key).toBe('testurl'));
+    const mocked = fetchToJson('/testurl').then(json =>
+      expect(json.key).toBe('testurl')
+    );
     const fallback = fetchToJson('https://xkcd.com/info.0.json').then(json =>
       expect(json.num).toBeDefined()
     );
@@ -159,7 +167,10 @@ describe('FetchMock', () => {
 
   it('should support delayed responses', done => {
     mock.get('/test', ResponseUtils.delayed(200, { key: 'delayed' }));
-    mock.get('/test2', ResponseUtils.delayed(200, ResponseUtils.json({ key: 'delayed2' })));
+    mock.get(
+      '/test2',
+      ResponseUtils.delayed(200, ResponseUtils.json({ key: 'delayed2' }))
+    );
     const startTime = new Date().getTime();
 
     Promise.all([fetchToJson('/test'), fetchToJson('/test2')]).then(json => {
@@ -198,7 +209,10 @@ describe('FetchMock', () => {
   it('should be able to combine response utils', done => {
     mock.get(
       '/combine',
-      ResponseUtils.combine(ResponseUtils.json({ key: 'value' }), ResponseUtils.statusCode(201))
+      ResponseUtils.combine(
+        ResponseUtils.json({ key: 'value' }),
+        ResponseUtils.statusCode(201)
+      )
     );
 
     mock.get(
@@ -242,7 +256,9 @@ describe('FetchMock', () => {
   });
 
   it('should jsonValue as response in MockHandler', done => {
-    const myResponse = ({ queryParams }: HandlerArgument) => ({ key: 'BIG-CASE' });
+    const myResponse = ({ queryParams }: HandlerArgument) => ({
+      key: 'BIG-CASE'
+    });
 
     mock.post('/lowercase', myResponse);
 
@@ -260,7 +276,9 @@ describe('middleware-utils', () => {
   it('should combine middlewares', done => {
     MathMock.fixRandom(0.2);
     const delay = jest.fn(MiddlewareUtils.delayMiddleware(100));
-    const failure = jest.fn(MiddlewareUtils.failurerateMiddleware(0.3, { status: 1337 }));
+    const failure = jest.fn(
+      MiddlewareUtils.failurerateMiddleware(0.3, { status: 1337 })
+    );
     const startTime = new Date().getTime();
 
     const combined = MiddlewareUtils.combine(delay, failure);
@@ -294,7 +312,10 @@ describe('middleware-utils', () => {
   it('should have a random failure rate', done => {
     MathMock.fixRandom(0.2);
     const delay = MiddlewareUtils.failurerateMiddleware(0.3);
-    const result = delay({} as HandlerArgument, 'normal-response' as ResponseData);
+    const result = delay(
+      {} as HandlerArgument,
+      'normal-response' as ResponseData
+    );
 
     (result as Promise<ResponseData>).then(res => {
       expect(res.status).toBe(500);
@@ -305,7 +326,10 @@ describe('middleware-utils', () => {
   it('should have a random failure rate2', done => {
     MathMock.fixRandom(0.4);
     const delay = MiddlewareUtils.failurerateMiddleware(0.3);
-    const result = delay({} as HandlerArgument, 'normal-response' as ResponseData);
+    const result = delay(
+      {} as HandlerArgument,
+      'normal-response' as ResponseData
+    );
 
     (result as Promise<String>).then(res => {
       expect(res).toBe('normal-response');
@@ -316,11 +340,19 @@ describe('middleware-utils', () => {
   it('should support custom error response', done => {
     MathMock.fixRandom(0.2);
     const delay = MiddlewareUtils.failurerateMiddleware(0.3, { status: 1337 });
-    const result = delay({} as HandlerArgument, 'normal-response' as ResponseData);
+    const result = delay(
+      {} as HandlerArgument,
+      'normal-response' as ResponseData
+    );
 
     (result as Promise<ResponseData>).then(res => {
       expect(res.status).toBe(1337);
       done();
     });
+  });
+
+  it('should support null values in JSON', done => {
+    const value: JSONValue = { data: null };
+    done();
   });
 });
