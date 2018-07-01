@@ -10,3 +10,7 @@ compiled
 .awcache
 .rpt2_cache
 docs/
+.cache/
+src/**/*.js*
+pages/**/*.js*
+src/**/*.d.ts
