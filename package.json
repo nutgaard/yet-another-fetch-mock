@@ -76,7 +76,8 @@
       }
     },
     "collectCoverage": true,
-    "mapCoverage": true
+    "mapCoverage": true,
+    "testURL": "http://localhost/"
   },
   "devDependencies": {
     "@types/jest": "^22.0.0",
