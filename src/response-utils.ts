@@ -53,7 +53,7 @@ export default class ResponseUtils {
   }
 
   static jsonPromise(json: MockHandler): Promise<ResponseData> {
-    const response: ResponseData = { body: JSON.stringify(json) } as ResponseData;
+    const response: ResponseData = { body: JSON.stringify(json) };
     return Promise.resolve(response);
   }
 
@@ -67,14 +67,21 @@ export default class ResponseUtils {
 
   static statusCode(status: number): MockHandler {
     return (args: HandlerArgument) => {
-      const response: ResponseData = { status } as ResponseData;
+      const response: ResponseData = { status };
       return Promise.resolve(response);
     };
   }
 
   static statusText(statusText: string): MockHandler {
     return (args: HandlerArgument) => {
-      const response: ResponseData = { statusText } as ResponseData;
+      const response: ResponseData = { statusText };
+      return Promise.resolve(response);
+    };
+  }
+
+  static headers(headers: { [key: string]: string }): MockHandler {
+    return (args: HandlerArgument) => {
+      const response: ResponseData = { headers };
       return Promise.resolve(response);
     };
   }

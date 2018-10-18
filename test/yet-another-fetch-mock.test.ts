@@ -219,6 +219,21 @@ describe('FetchMock', () => {
     Promise.all([first, second]).then(() => done());
   });
 
+  it('should be able to set headers', done => {
+    mock.get(
+      '/withheaders',
+      ResponseUtils.combine(
+        ResponseUtils.json({ key: 'value' }),
+        ResponseUtils.headers({ 'Content-Type': 'custom/type' })
+      )
+    );
+
+    fetch('/withheaders').then(resp => {
+      expect(resp.headers.get('Content-Type')).toBe('custom/type');
+      done();
+    });
+  });
+
   it('should support lowercase httpverb', done => {
     mock.post('/lowercase', { key: 'BIG-CASE' });
 
