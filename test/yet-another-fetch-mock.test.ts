@@ -126,7 +126,7 @@ describe('FetchMock', () => {
 
     expect(() => {
       fetchToJson('/test');
-    }).toThrow(`Did not find any matching route for url: /test`);
+    }).toThrow(`Did not find any matching route for: GET /test`);
   });
 
   it('should throw on unknown url type', () => {
