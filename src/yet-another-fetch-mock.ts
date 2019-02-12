@@ -76,9 +76,12 @@ class FetchMock {
 
     if (typeof matchingRoute === 'undefined') {
       if (this.configuration.enableFallback) {
+        console.warn(
+          `Did not find any matching route for: ${method.toUpperCase()} ${url}. Defaulting to the real fetch-implementation.`
+        );
         response = this.realFetch.call(this.scope, input, init);
       } else {
-        throw new Error(`Did not find any matching route for url: ${url}`);
+        throw new Error(`Did not find any matching route for: ${method.toUpperCase()} ${url}.`);
       }
     } else {
       pathParams = findPathParams(url, matchingRoute.matcher.matcherUrl);
