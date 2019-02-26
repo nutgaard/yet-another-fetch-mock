@@ -2,7 +2,13 @@
   "name": "yet-another-fetch-mock",
   "version": "0.0.0-development",
   "description": "",
-  "keywords": [],
+  "keywords": [
+    "fetch",
+    "mock",
+    "fetchmock",
+    "spy",
+    "test"
+  ],
   "main": "dist/yet-another-fetch-mock.umd.js",
   "module": "dist/yet-another-fetch-mock.es5.js",
   "typings": "dist/types/yet-another-fetch-mock.d.ts",
@@ -19,41 +25,39 @@
     "node": ">=6.0.0"
   },
   "scripts": {
-    "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
+    "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
     "prebuild": "rimraf dist",
-    "build": "tsc --module commonjs && rollup -c rollup.config.ts && npm run docs",
-    "docs": "typedoc --out docs --target es6 --theme minimal --mode file --exclude \"**/*internal*\" src",
+    "build": "tsc --module commonjs && rollup -c rollup.config.ts && typedoc --out docs --target es6 --theme minimal --mode file src",
     "start": "rollup -c rollup.config.ts -w",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:prod": "npm run lint && npm run test -- --coverage --no-cache",
+    "test": "jest --coverage",
+    "test:watch": "jest --coverage --watch",
+    "test:prod": "npm run lint && npm run test -- --no-cache",
     "deploy-docs": "ts-node tools/gh-pages-publish",
     "report-coverage": "codecov",
     "commit": "git-cz",
     "semantic-release": "semantic-release",
     "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
     "precommit": "lint-staged",
-    "travis-deploy-once": "travis-deploy-once"
+    "travis-deploy-once": "travis-deploy-once",
+    "prepush": "npm run test:prod && npm run build",
+    "commitmsg": "commitlint -E HUSKY_GIT_PARAMS"
   },
   "lint-staged": {
     "{src,test}/**/*.ts": [
-      "prettier --write --single-quote",
+      "prettier --write",
       "git add"
     ]
   },
   "config": {
     "commitizen": {
       "path": "node_modules/cz-conventional-changelog"
-    },
-    "validate-commit-msg": {
-      "types": "conventional-commit-types",
-      "helpMessage": "Use \"npm run commit\" instead, we use conventional-changelog format :) (https://github.com/commitizen/cz-cli)"
     }
   },
   "jest": {
     "transform": {
-      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+      ".(ts|tsx)": "ts-jest"
     },
+    "testEnvironment": "jsdom",
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
     "moduleFileExtensions": [
       "ts",
@@ -72,44 +76,59 @@
         "statements": 95
       }
     },
-    "collectCoverage": true,
-    "mapCoverage": true,
-    "testURL": "http://localhost/"
+    "collectCoverageFrom": [
+      "src/*.{js,ts}"
+    ]
+  },
+  "prettier": {
+    "semi": true,
+    "singleQuote": true
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   },
   "devDependencies": {
-    "@types/jest": "^22.0.0",
-    "@types/node": "^9.3.0",
+    "@commitlint/cli": "^7.1.2",
+    "@commitlint/config-conventional": "^7.1.2",
+    "@types/isomorphic-fetch": "0.0.35",
+    "@types/jest": "^23.3.2",
+    "@types/lodash.curry": "^4.1.5",
+    "@types/node": "^10.11.0",
     "@types/path-to-regexp": "^1.7.0",
     "@types/query-string": "^5.1.0",
-    "codecov": "^3.0.0",
-    "colors": "^1.1.2",
-    "commitizen": "^2.9.6",
-    "cross-env": "^5.0.1",
-    "cz-conventional-changelog": "^2.0.0",
-    "husky": "^0.14.3",
+    "codecov": "^3.2.0",
+    "colors": "^1.3.2",
+    "commitizen": "^3.0.0",
+    "cross-env": "^5.2.0",
+    "cz-conventional-changelog": "^2.1.0",
+    "husky": "^1.0.1",
     "isomorphic-fetch": "^2.2.1",
-    "jest": "^22.0.2",
-    "lint-staged": "^7.0.0",
+    "jest": "^24.1.0",
+    "jest-config": "^24.1.0",
+    "lint-staged": "^8.0.0",
     "lodash.camelcase": "^4.3.0",
-    "prettier": "^1.4.4",
+    "prettier": "^1.14.3",
     "prompt": "^1.0.0",
-    "replace-in-file": "^3.0.0-beta.2",
-    "rimraf": "^2.6.1",
-    "rollup": "^0.55.4",
-    "rollup-plugin-commonjs": "^8.0.2",
-    "rollup-plugin-node-resolve": "^3.0.0",
+    "replace-in-file": "^3.4.2",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.67.0",
+    "rollup-plugin-commonjs": "^9.1.8",
+    "rollup-plugin-json": "^3.1.0",
+    "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
-    "rollup-plugin-typescript2": "^0.11.1",
-    "semantic-release": "^15.10.3",
+    "rollup-plugin-typescript2": "^0.19.2",
+    "semantic-release": "^15.13.3",
+    "shelljs": "^0.8.3",
     "travis-deploy-once": "^5.0.9",
-    "ts-jest": "^22.0.0",
-    "ts-node": "^4.1.0",
-    "tslint": "^5.8.0",
-    "tslint-config-prettier": "^1.1.0",
-    "tslint-config-standard": "^7.0.0",
-    "typedoc": "^0.10.0",
-    "typescript": "^2.6.2",
-    "validate-commit-msg": "^2.12.2"
+    "ts-jest": "^24.0.0",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.15.0",
+    "tslint-config-standard": "^8.0.1",
+    "typedoc": "^0.12.0",
+    "typescript": "^3.0.3"
   },
   "dependencies": {
     "path-to-regexp": "^2.1.0",
