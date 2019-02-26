@@ -121,4 +121,5 @@ export default FetchMock;
 export { default as MatcherUtils } from './matcher-utils';
 export { default as ResponseUtils } from './response-utils';
 export { default as MiddlewareUtils } from './middleware-utils';
+export { default as SpyMiddleware } from './spy-middleware';
 export * from './types';
