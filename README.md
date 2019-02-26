@@ -68,17 +68,60 @@ mock.get('/test/:id', ResponseUtils.delayed(1000, (args: HandlerArgument) => {
 }));
 ```
 
-#### Types
-Full documentation of types can be seen [here](https://www.utgaard.xyz/yet-another-fetch-mock/),
-or [here](https://github.com/nutgaard/yet-another-fetch-mock/blob/master/src/types.ts) if you prefer reading typescript code.
-
-
 ### Teardown
 
 ```javascript
 mock.restore();
 ```
 
+### Usage in tests
+The library ships with a custom `Middleware` that allows for introspection of intercepted fetch-calls.
+
+The `spy` exposes seven diffrent methods, six (`middleware` is used for setup) of which can be used to verify that a call has been intercepted.
+All methods accept an optional argument of the type `RouteMatcher` which can be created using the `MatcherUtils`.
+In cases where you don't send in an `RouteMatcher`, then a default "match-everything"-matcher is used.
+
+#### Example
+```typescript
+import FetchMock, { MatcherUtils, SpyMiddleware } from 'yet-another-fetch-mock';
+
+describe('test using yet-another-fetch-mock', () => {
+  let mock: FetchMock;
+  let spy: SpyMiddleware;
+  
+  beforeEach(() => {
+    spy = new SpyMiddleware();
+    mock = FetchMock.configure({
+      middleware: spy.middleware
+    });
+    expect(spy.size()).toBe(0);
+  });
+  
+  afterEach(() => {
+    mock.restore();
+  });
+  
+  it('should capture calls', (done) => {
+      mock.get('/test/:id', { data: 'test' });
+      Promise.all([
+        fetch('/test/121'),
+        fetch('/test/122')
+      ])
+        .then(() => {
+          expect(spy.size()).toBe(2);
+          expect(spy.lastCall()).not.toBeNull();
+          expect(spy.lastUrl()).toBe('/test/122');
+          expect(spy.called(MatcherUtils.url('/test/:id'))).toBe(true);
+          done();
+        })
+    });
+});
+```
+
+
+#### Types
+Full documentation of types can be seen [here](https://www.utgaard.xyz/yet-another-fetch-mock/),
+or [here](https://github.com/nutgaard/yet-another-fetch-mock/blob/master/src/types.ts) if you prefer reading typescript code.
 
 
 ### Tips

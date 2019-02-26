@@ -99,4 +99,15 @@ describe('SpyMiddlware', () => {
       done();
     });
   });
+
+  it('should capture calls', done => {
+    mock.get('/test/:id', { data: 'test' });
+    Promise.all([fetch('/test/121'), fetch('/test/122')]).then(() => {
+      expect(spy.size()).toBe(2);
+      expect(spy.lastCall()).not.toBeNull();
+      expect(spy.lastUrl()).toBe('/test/122');
+      expect(spy.called(MatcherUtils.url('/test/:id'))).toBe(true);
+      done();
+    });
+  });
 });
