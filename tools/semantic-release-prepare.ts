@@ -8,7 +8,7 @@ const pkg = JSON.parse(
 )
 
 pkg.scripts.prepush = "npm run test:prod && npm run build"
-pkg.scripts.commitmsg = "validate-commit-msg"
+pkg.scripts.commitmsg = "commitlint -E HUSKY_GIT_PARAMS"
 
 writeFileSync(
   path.resolve(__dirname, "..", "package.json"),
@@ -16,7 +16,7 @@ writeFileSync(
 )
 
 // Call husky to set up the hooks
-fork(path.resolve(__dirname, "..", "node_modules", "husky", "bin", "install"))
+fork(path.resolve(__dirname, "..", "node_modules", "husky", "lib", "installer", 'bin'), ['install'])
 
 console.log()
 console.log(colors.green("Done!!"))

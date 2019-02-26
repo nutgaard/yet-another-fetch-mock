@@ -8,7 +8,8 @@ import {
   RequestUrl,
   ResponseData
 } from './types';
-import pathToRegex, { Key } from 'path-to-regexp';
+const pathToRegex = require('path-to-regexp');
+import { Key } from 'path-to-regexp';
 import ResponseUtils from './response-utils';
 
 export function findRequestUrl(input: RequestInfo, init?: RequestInit): RequestUrl {

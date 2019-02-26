@@ -1,9 +1,9 @@
-const { cd, exec, echo, touch } = require("shelljs");
-const { readFileSync } = require("fs");
-const url = require("url");
+const { cd, exec, echo, touch } = require("shelljs")
+const { readFileSync } = require("fs")
+const url = require("url")
 
-let repoUrl;
-let pkg = JSON.parse(readFileSync("package.json") as any);
+let repoUrl
+let pkg = JSON.parse(readFileSync("package.json") as any)
 if (typeof pkg.repository === "object") {
   if (!pkg.repository.hasOwnProperty("url")) {
     throw new Error("URL does not exist in repository section")
@@ -23,7 +23,7 @@ touch(".nojekyll")
 exec("git init")
 exec("git add .")
 exec('git config user.name "Nicklas Utgaard"')
-exec('git config user.email "nicklas.utgaard@bekk.no"')
+exec('git config user.email "nutgaard@gmail.com"')
 exec('git commit -m "docs(docs): update gh-pages"')
 exec(
   `git push --force --quiet "https://${ghToken}@${repository}" master:gh-pages`
