@@ -1,16 +1,11 @@
 import { HttpMethod, MatcherUrl, RequestUrl, RouteMatcher } from './types';
 import { findRequestMethod, findRequestUrl } from './internal-utils';
-import pathToRegex, { Key } from 'path-to-regexp';
+const pathToRegex = require('path-to-regexp');
+import { Key } from 'path-to-regexp';
 
-function httpMethodHelper(
-  matcherUrl: MatcherUrl,
-  httpMethod: HttpMethod
-): RouteMatcher {
+function httpMethodHelper(matcherUrl: MatcherUrl, httpMethod: HttpMethod): RouteMatcher {
   if (typeof matcherUrl === 'string') {
-    return MatcherUtils.combine(
-      MatcherUtils.method(httpMethod),
-      MatcherUtils.url(matcherUrl)
-    );
+    return MatcherUtils.combine(MatcherUtils.method(httpMethod), MatcherUtils.url(matcherUrl));
   } else {
     throw new Error(`Unknown type of matcherUrl: ${typeof matcherUrl}`);
   }
@@ -20,10 +15,7 @@ export default class MatcherUtils {
   static combine(...matchers: RouteMatcher[]): RouteMatcher {
     return {
       test: (input: RequestInfo, init?: RequestInit) => {
-        return matchers.reduce(
-          (status, matcher) => status && matcher.test(input, init),
-          true
-        );
+        return matchers.reduce((status, matcher) => status && matcher.test(input, init), true);
       },
       matcherUrl: matchers.map(matcher => matcher.matcherUrl).find(url => !!url)
     };
@@ -45,14 +37,10 @@ export default class MatcherUtils {
         }
 
         const url = findRequestUrl(input, init);
-        const urlWithoutQueryParams: RequestUrl = url.split(
-          '?'
-        )[0] as RequestUrl;
+        const urlWithoutQueryParams: RequestUrl = url.split('?')[0] as RequestUrl;
         const keys: Key[] = [];
         const matcherRegex: RegExp = pathToRegex(matcherUrl, keys);
-        const match: RegExpExecArray | null = matcherRegex.exec(
-          urlWithoutQueryParams
-        );
+        const match: RegExpExecArray | null = matcherRegex.exec(urlWithoutQueryParams);
 
         return !!match;
       },
