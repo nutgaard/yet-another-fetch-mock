@@ -39,4 +39,29 @@ export default class MiddlewareUtils {
       });
     };
   }
+
+  static loggingMiddleware(): Middleware {
+    return (request, response) => {
+      // tslint:disable
+      console.groupCollapsed(`${request.method} ${request.url}`);
+      console.groupCollapsed('config');
+      console.log('queryParams', request.queryParams);
+      console.log('pathParams', request.pathParams);
+      console.log('body', request.body);
+      if (request.init) {
+        console.log('header', request.init.headers);
+      }
+      console.groupEnd();
+
+      try {
+        console.log('response', JSON.parse(response.body));
+      } catch (e) {
+        console.log('response', response);
+      }
+
+      console.groupEnd();
+      // tslint:enable
+      return response;
+    };
+  }
 }

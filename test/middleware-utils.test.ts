@@ -2,10 +2,18 @@ import { HandlerArgument, ResponseData } from '../src/types';
 import MathMock from './math-mock';
 import { JSONValue } from '../src/yet-another-fetch-mock';
 import MiddlewareUtils from '../src/middleware-utils';
+import ConsoleMock from './console-mock';
 
 describe('middleware-utils', () => {
-  beforeAll(MathMock.setup);
-  afterAll(MathMock.teardown);
+  beforeAll(() => {
+    MathMock.setup();
+    ConsoleMock.setup();
+  });
+
+  afterAll(() => {
+    MathMock.teardown();
+    ConsoleMock.teardown();
+  });
 
   it('should combine middlewares', done => {
     MathMock.fixRandom(0.2);
@@ -77,5 +85,12 @@ describe('middleware-utils', () => {
   it('should support null values in JSON', done => {
     const value: JSONValue = { data: null };
     done();
+  });
+
+  it('should should log the request', () => {
+    const logging = MiddlewareUtils.loggingMiddleware();
+    logging({ init: { headers: {} } } as HandlerArgument, 'resp' as ResponseData);
+
+    expect(console.log).toBeCalledTimes(5);
   });
 });
