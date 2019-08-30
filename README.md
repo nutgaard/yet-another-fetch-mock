@@ -119,9 +119,20 @@ describe('test using yet-another-fetch-mock', () => {
 ```
 
 
-#### Types
+#### Typescript
 Full documentation of types can be seen [here](https://www.utgaard.xyz/yet-another-fetch-mock/),
 or [here](https://github.com/nutgaard/yet-another-fetch-mock/blob/master/src/types.ts) if you prefer reading typescript code.
+
+##### !!!NB!!!
+
+**Known issue:**
+`Argument of type '({ queryParams }: HandlerArgument) => MyDataInterface' is not assignable to parameter of type 'MockHandler'.`
+The solution is often to ensure that `MyDataInterface` is also a `JsonObject`.
+E.g
+```
+mock.get('/my-url', () => mockData as MyDataInterface & JsonObject)
+```
+
 
 
 ### Tips
