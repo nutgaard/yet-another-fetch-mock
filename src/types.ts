@@ -1,12 +1,6 @@
 export type Opaque<K, T> = T & { __TYPE__: K };
 
-export type JSONValue =
-  | null
-  | string
-  | number
-  | boolean
-  | JSONObject
-  | JSONArray;
+export type JSONValue = null | string | number | boolean | JSONObject | JSONArray;
 export type JSONObject = { [member: string]: JSONValue };
 export interface JSONArray extends Array<JSONValue> {}
 
@@ -47,9 +41,7 @@ export type MockHandler =
   | ((args: HandlerArgument) => JSONValue)
   | JSONValue;
 
-export type MockHandlerFunction = (
-  args: HandlerArgument
-) => Promise<ResponseData>;
+export type MockHandlerFunction = (args: HandlerArgument) => Promise<ResponseData>;
 export type RequestUrl = Opaque<'RequestUrl', string>;
 export type MatcherUrl = Opaque<'MatcherUrl', string>;
 
@@ -62,7 +54,9 @@ export type Middleware = (
   request: HandlerArgument,
   response: ResponseData
 ) => ResponseData | Promise<ResponseData>;
+
 export interface Configuration {
   enableFallback: boolean;
+  ignoreMiddlewareIfFallback: boolean;
   middleware: Middleware;
 }
