@@ -20,6 +20,7 @@ import MatcherUtils from './matcher-utils';
 
 const defaultConfiguration: Configuration = {
   enableFallback: true,
+  ignoreMiddlewareIfFallback: false,
   middleware: (request, response) => response
 };
 
@@ -80,6 +81,9 @@ class FetchMock {
           `Did not find any matching route for: ${method.toUpperCase()} ${url}. Defaulting to the real fetch-implementation.`
         );
         response = this.realFetch.call(this.scope, input, init);
+        if (this.configuration.ignoreMiddlewareIfFallback) {
+          return response as Promise<Response>;
+        }
       } else {
         throw new Error(`Did not find any matching route for: ${method.toUpperCase()} ${url}.`);
       }
