@@ -1,7 +1,16 @@
 import { HttpMethod, MatcherUrl, RequestUrl, RouteMatcher } from './types';
 import { findRequestMethod, findRequestUrl } from './internal-utils';
-const pathToRegex = require('path-to-regexp');
 import { Key } from 'path-to-regexp';
+
+const pathToRegex = require('path-to-regexp');
+
+const heuristics = [/\?\w=\w/, /\&\w=\w/, /\?\w$/, /\&\w$/];
+function containsQueryParams(matcherUrl: string): boolean {
+  if (matcherUrl.includes('?')) {
+    return heuristics.some(heuristic => heuristic.test(matcherUrl));
+  }
+  return false;
+}
 
 function httpMethodHelper(matcherUrl: MatcherUrl, httpMethod: HttpMethod): RouteMatcher {
   if (typeof matcherUrl === 'string') {
@@ -30,6 +39,23 @@ export default class MatcherUtils {
   }
 
   static url(matcherUrl: string): RouteMatcher {
+    if (containsQueryParams(matcherUrl)) {
+      console.warn(
+        `
+Matching url '${matcherUrl}' seems to contain queryparameters.
+This is unfortunatly not supported due to a limitation in the matching library.
+
+If the mock-response is dependent on the queryparameter you must use the following;
+
+mock.get('/path-without-queryparam', ({ queryParams }) => {
+  if (queryParams.paramName === 'paramValue') {
+    return mockDataGivenParam;
+  }
+  return mockDataWithoutParam;
+});
+      `.trim()
+      );
+    }
     return {
       test: (input: RequestInfo, init?: RequestInit) => {
         if (matcherUrl === '*') {
