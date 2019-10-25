@@ -5,7 +5,7 @@ import {
   MockHandlerFunction,
   ResponseData
 } from './types';
-import { testPromise } from './internal-utils';
+import { testPromise } from './promise-utils';
 
 function execHandler(handler: MockHandler, args: HandlerArgument): Promise<ResponseData> {
   if (typeof handler === 'function') {

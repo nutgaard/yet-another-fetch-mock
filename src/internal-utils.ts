@@ -8,9 +8,10 @@ import {
   RequestUrl,
   ResponseData
 } from './types';
-const pathToRegex = require('path-to-regexp');
 import { Key } from 'path-to-regexp';
 import ResponseUtils from './response-utils';
+import { testPromise } from './promise-utils';
+const pathToRegex = require('path-to-regexp');
 
 export function findRequestUrl(input: RequestInfo, init?: RequestInit): RequestUrl {
   if (typeof input === 'string') {
@@ -58,10 +59,6 @@ export function findBody(input: RequestInfo, init?: RequestInit) {
   } catch (e) {
     return init.body;
   }
-}
-
-export function testPromise(data: any): boolean {
-  return Promise.resolve(data) == data; // tslint:disable-line
 }
 
 export function toMockHandlerFunction(handler: MockHandler): MockHandlerFunction {

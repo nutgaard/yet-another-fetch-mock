@@ -24,7 +24,10 @@ export default class MatcherUtils {
   static combine(...matchers: RouteMatcher[]): RouteMatcher {
     return {
       test: (input: RequestInfo, init?: RequestInit) => {
-        return matchers.reduce((status, matcher) => status && matcher.test(input, init), true);
+        return matchers.reduce(
+          (status, matcher) => status && matcher.test(input, init),
+          Boolean(true)
+        );
       },
       matcherUrl: matchers.map(matcher => matcher.matcherUrl).find(url => !!url)
     };
