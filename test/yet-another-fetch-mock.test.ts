@@ -153,7 +153,7 @@ describe('FetchMock', () => {
       const endTime = new Date().getTime();
       expect(json[0].key).toBe('delayed');
       expect(json[1].key).toBe('delayed2');
-      expect(endTime - startTime).toBeGreaterThan(200);
+      expect(endTime - startTime).toBeGreaterThan(190);
       done();
     });
   });
