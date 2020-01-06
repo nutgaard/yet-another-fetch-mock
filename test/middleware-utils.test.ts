@@ -26,7 +26,7 @@ describe('middleware-utils', () => {
 
     (result as Promise<ResponseData>).then(res => {
       const endTime = new Date().getTime();
-      expect(endTime - startTime).toBeGreaterThanOrEqual(100);
+      expect(endTime - startTime).toBeGreaterThanOrEqual(90);
 
       expect(res.status).toBe(1337);
       expect(delay).toHaveBeenCalledTimes(1);
@@ -43,7 +43,7 @@ describe('middleware-utils', () => {
     (result as Promise<String>).then(res => {
       const endTime = new Date().getTime();
 
-      expect(endTime - startTime).toBeGreaterThanOrEqual(100);
+      expect(endTime - startTime).toBeGreaterThanOrEqual(90);
       expect(res).toBe('delayed');
       done();
     });
