@@ -134,9 +134,25 @@ describe('FetchMock', () => {
   });
 
   it('should support fallback to realFetch', done => {
-    mock.get('/testurl', { key: 'testurl' });
+    mock.get('/testurl', { num: 'testurl' });
 
-    const mocked = fetchToJson('/testurl').then(json => expect(json.key).toBe('testurl'));
+    const mocked = fetchToJson('/testurl').then(json => expect(json.num).toBe('testurl'));
+    const fallback = fetchToJson('https://xkcd.com/info.0.json').then(json =>
+      expect(json.num).toBeDefined()
+    );
+
+    Promise.all([mocked, fallback]).then(() => done());
+  });
+
+  it('should remove all mocks on reset', done => {
+    mock.get('https://xkcd.com/info.0.json', { num: 'testurl' });
+
+    const mocked = fetchToJson('https://xkcd.com/info.0.json').then(json =>
+      expect(json.num).toBe('testurl')
+    );
+
+    mock.reset();
+
     const fallback = fetchToJson('https://xkcd.com/info.0.json').then(json =>
       expect(json.num).toBeDefined()
     );

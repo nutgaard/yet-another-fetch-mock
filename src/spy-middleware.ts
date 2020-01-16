@@ -12,7 +12,7 @@ export interface Entry {
 }
 
 export default class SpyMiddleware {
-  private readonly entries: Entry[];
+  private entries: Entry[];
 
   constructor() {
     this.middleware = this.middleware.bind(this);
@@ -26,6 +26,10 @@ export default class SpyMiddleware {
     const entry = { request, response };
     this.entries.unshift(entry);
     return response;
+  }
+
+  reset() {
+    this.entries = [];
   }
 
   calls(matcher: RouteMatcher = allMatcher) {
