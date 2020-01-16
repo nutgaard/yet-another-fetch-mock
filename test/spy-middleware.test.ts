@@ -110,4 +110,20 @@ describe('SpyMiddlware', () => {
       done();
     });
   });
+
+  it('should remove all entries on reset', done => {
+    mock.get('/test/:id', { data: 'test' });
+    Promise.all([fetch('/test/121'), fetch('/test/122')]).then(() => {
+      expect(spy.size()).toBe(2);
+      expect(spy.lastCall()).toBeDefined();
+      expect(spy.lastUrl()).toBe('/test/122');
+      expect(spy.called(MatcherUtils.url('/test/:id'))).toBe(true);
+
+      spy.reset();
+      expect(spy.lastCall()).toBeUndefined();
+      expect(spy.lastUrl()).toBeUndefined();
+      expect(spy.called(MatcherUtils.url('/test/:id'))).toBe(false);
+      done();
+    });
+  });
 });

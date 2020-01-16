@@ -66,6 +66,10 @@ class FetchMock {
     this.routes.push({ matcher, handler: toMockHandlerFunction(handler) });
   }
 
+  reset() {
+    this.routes = [];
+  }
+
   private fetchproxy(input: RequestInfo, init?: RequestInit): Promise<Response> {
     const matchingRoute: Route | undefined = this.findMatchingRoute(input, init);
     const url: RequestUrl = findRequestUrl(input, init);
