@@ -1,16 +1,6 @@
 import * as queryString from 'query-string';
-import {
-  HandlerArgument,
-  HttpMethod,
-  MatcherUrl,
-  MockHandler,
-  MockHandlerFunction,
-  RequestUrl,
-  ResponseData
-} from './types';
+import { HttpMethod, MatcherUrl, RequestUrl } from './types';
 import { Key } from 'path-to-regexp';
-import ResponseUtils from './response-utils';
-import { testPromise } from './promise-utils';
 const pathToRegex = require('path-to-regexp');
 
 export function findRequestUrl(input: RequestInfo, init?: RequestInit): RequestUrl {
@@ -58,23 +48,5 @@ export function findBody(input: RequestInfo, init?: RequestInit) {
     return JSON.parse(init.body as string);
   } catch (e) {
     return init.body;
-  }
-}
-
-export function toMockHandlerFunction(handler: MockHandler): MockHandlerFunction {
-  if (typeof handler === 'function') {
-    return (args: HandlerArgument) =>
-      new Promise<ResponseData>((resolve, reject) => {
-        const result = handler(args);
-        const isPromise = testPromise(result);
-        if (isPromise) {
-          resolve(result as Promise<ResponseData>);
-        } else {
-          const response: ResponseData = { body: JSON.stringify(result) } as ResponseData;
-          resolve(response);
-        }
-      });
-  } else {
-    return ResponseUtils.json(handler);
   }
 }

@@ -15,7 +15,7 @@ describe('SpyMiddlware', () => {
     mock = FetchMock.configure({
       middleware: spy.middleware
     });
-    mock.mock(MatcherUtils.url('/data/:id'), data);
+    mock.mock(MatcherUtils.url('/data/:id'), (req, res, ctx) => res(ctx.json(data)));
     expect(spy.size()).toBe(0);
   });
 
@@ -101,7 +101,7 @@ describe('SpyMiddlware', () => {
   });
 
   it('should capture calls', done => {
-    mock.get('/test/:id', { data: 'test' });
+    mock.get('/test/:id', (req, res, ctx) => res(ctx.json({ data: 'test' })));
     Promise.all([fetch('/test/121'), fetch('/test/122')]).then(() => {
       expect(spy.size()).toBe(2);
       expect(spy.lastCall()).not.toBeNull();
@@ -112,7 +112,7 @@ describe('SpyMiddlware', () => {
   });
 
   it('should remove all entries on reset', done => {
-    mock.get('/test/:id', { data: 'test' });
+    mock.get('/test/:id', (req, res, ctx) => res(ctx.json({ data: 'test' })));
     Promise.all([fetch('/test/121'), fetch('/test/122')]).then(() => {
       expect(spy.size()).toBe(2);
       expect(spy.lastCall()).toBeDefined();

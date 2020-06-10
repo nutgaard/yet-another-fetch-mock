@@ -1,8 +1,11 @@
 import {
   Configuration,
+  Handler,
+  HandlerRequest,
+  HandlerResponse,
+  HandlerResponseElement,
   HttpMethod,
   MatcherUrl,
-  MockHandler,
   RequestUrl,
   ResponseData,
   Route,
@@ -13,10 +16,10 @@ import {
   findPathParams,
   findQueryParams,
   findRequestMethod,
-  findRequestUrl,
-  toMockHandlerFunction
+  findRequestUrl
 } from './internal-utils';
 import MatcherUtils from './matcher-utils';
+import HandlerContext from './handler-context';
 
 const defaultConfiguration: Configuration = {
   enableFallback: true,
@@ -46,24 +49,40 @@ class FetchMock {
     this.scope.fetch = this.realFetch;
   }
 
-  get(url: string, handler: MockHandler): void {
+  get(url: string, handler: Handler): void {
     this.mock(MatcherUtils.get(url as MatcherUrl), handler);
   }
 
-  post(url: string, handler: MockHandler): void {
+  head(url: string, handler: Handler): void {
+    this.mock(MatcherUtils.head(url as MatcherUrl), handler);
+  }
+
+  post(url: string, handler: Handler): void {
     this.mock(MatcherUtils.post(url as MatcherUrl), handler);
   }
 
-  delete(url: string, handler: MockHandler): void {
-    this.mock(MatcherUtils.del(url as MatcherUrl), handler);
-  }
-
-  put(url: string, handler: MockHandler): void {
+  put(url: string, handler: Handler): void {
     this.mock(MatcherUtils.put(url as MatcherUrl), handler);
   }
 
-  mock(matcher: RouteMatcher, handler: MockHandler) {
-    this.routes.push({ matcher, handler: toMockHandlerFunction(handler) });
+  delete(url: string, handler: Handler): void {
+    this.mock(MatcherUtils.del(url as MatcherUrl), handler);
+  }
+
+  connect(url: string, handler: Handler): void {
+    this.mock(MatcherUtils.connect(url as MatcherUrl), handler);
+  }
+
+  options(url: string, handler: Handler): void {
+    this.mock(MatcherUtils.options(url as MatcherUrl), handler);
+  }
+
+  patch(url: string, handler: Handler): void {
+    this.mock(MatcherUtils.patch(url as MatcherUrl), handler);
+  }
+
+  mock(matcher: RouteMatcher, handler: Handler) {
+    this.routes.push({ matcher, handler });
   }
 
   reset() {
@@ -93,15 +112,18 @@ class FetchMock {
       }
     } else {
       pathParams = findPathParams(url, matchingRoute.matcher.matcherUrl);
-      response = matchingRoute.handler({
-        input,
-        init,
-        url,
-        method,
-        pathParams,
-        queryParams,
-        body
-      });
+      const req: HandlerRequest = { input, init, url, method, pathParams, queryParams, body };
+      const res: HandlerResponse = async (...args: Array<HandlerResponseElement>) => {
+        let responseData: ResponseData = {};
+        for (const responseElement of args) {
+          responseData = await responseElement(responseData);
+        }
+
+        return responseData;
+      };
+      const ctx = new HandlerContext(req, this.realFetch);
+
+      response = matchingRoute.handler(req, res, ctx);
     }
 
     return response
@@ -127,7 +149,6 @@ class FetchMock {
 export default FetchMock;
 
 export { default as MatcherUtils } from './matcher-utils';
-export { default as ResponseUtils } from './response-utils';
 export { default as MiddlewareUtils } from './middleware-utils';
 export { default as SpyMiddleware } from './spy-middleware';
 export * from './types';
