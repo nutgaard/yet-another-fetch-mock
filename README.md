@@ -37,18 +37,18 @@ const delayedErrorMock = FetchMock.configure({
 
 ### Examples
 ```typescript
-mock.get('/my-url', { key: 'value' }); // Returns the object as the json-response
-mock.post('/another-url', { key: 'result of posting' });
+mock.get('/my-url', (req, res, ctx) => res(ctx.json({ key: 'value' }))); // Returns the object as the json-response
+mock.post('/another-url', (req, res, ctx) => res(ctx.json({ key: 'result of posting' })));
 
 
 // Creating dynamic content based on url
-mock.put('/api/:id/app', (args: HandlerArgument) => {
-  // `args` contains the original parameters to `fetch`,
+mock.put('/api/:id/app', (req, res, ctx) => {
+  // `req` contains the original parameters to `fetch`,
   // and in addition: url, http-verb, path parameters and query parameters
-  return ResponseUtils.jsonPromise({
-    id: args.pathParams.id,
-    content: 'Some random content'
-  }); 
+  // `res` is used for combining and build your response based on helpers from `ctx`
+  return res(
+    ctx.json({id: req.pathParams.id, content: 'Some random content'})
+  ); 
 });
 
 
@@ -59,13 +59,18 @@ mock.mock(
     MatcherUtils.url('/custom-url'),
     // Your custom matcher here
   ),
-  ResponseUtils.delayed(1000, { data: 'lots of data' })
+  (res, req, ctx) => res(
+    ctx.delay(1000),
+    ctx.json({ data: 'lots of data' })
+  )
 );
 
 // Combining resultsUtils
-mock.get('/test/:id', ResponseUtils.delayed(1000, (args: HandlerArgument) => {
-  return ResponseUtils.jsonPromise({ requestId: args.pathParams.id });
-}));
+mock.get('/test/:id', (req, res, ctx) => res(
+  ctx.delay(1000),
+  ctx.header('X-My-Header' ,'HeaderValue'),
+  ctx.json({ requestId: req.pathParams.id })
+));
 ```
 
 ### Teardown
@@ -102,7 +107,7 @@ describe('test using yet-another-fetch-mock', () => {
   });
   
   it('should capture calls', (done) => {
-      mock.get('/test/:id', { data: 'test' });
+      mock.get('/test/:id', (req, res, ctx) => res(ctx.json({ data: 'test' })));
       Promise.all([
         fetch('/test/121'),
         fetch('/test/122')
@@ -123,23 +128,16 @@ describe('test using yet-another-fetch-mock', () => {
 Full documentation of types can be seen [here](https://www.utgaard.xyz/yet-another-fetch-mock/),
 or [here](https://github.com/nutgaard/yet-another-fetch-mock/blob/master/src/types.ts) if you prefer reading typescript code.
 
-##### !!!NB!!!
-
-**Known issue:**
-`Argument of type '({ queryParams }: HandlerArgument) => MyDataInterface' is not assignable to parameter of type 'MockHandler'.`
-The solution is often to ensure that `MyDataInterface` is also a `JsonObject`.
-E.g
-```
-mock.get('/my-url', () => mockData as MyDataInterface & JsonObject)
-```
-
-
-
 ### Tips
 
-* It is recommended to toggle the fetch-mock functionality behind an environment variable, as to allow uglify etc to remove the code for production build.
-* Take a look at the original [readme](https://github.com/alexjoverm/typescript-library-starter/blob/master/README.md);
+It is recommended to toggle the fetch-mock functionality behind an environment variable, as to allow uglify/envify (or similar) to remove the code for production builds.
 
+As an example;
+```typescript jsx
+if (process.env.USE_MOCK_SETUP === 'true') {
+  require('./mocks')
+}
+``` 
 
 ## Credits
 
