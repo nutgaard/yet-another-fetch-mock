@@ -1,6 +1,5 @@
-import { HandlerArgument, ResponseData } from '../src/types';
+import { MockRequest, ResponseData } from '../src/types';
 import MathMock from './math-mock';
-import { JSONValue } from '../src/yet-another-fetch-mock';
 import MiddlewareUtils from '../src/middleware-utils';
 import ConsoleMock from './console-mock';
 
@@ -22,7 +21,7 @@ describe('middleware-utils', () => {
     const startTime = new Date().getTime();
 
     const combined = MiddlewareUtils.combine(delay, failure);
-    const result = combined({} as HandlerArgument, 'data' as ResponseData);
+    const result = combined({} as MockRequest, 'data' as ResponseData);
 
     (result as Promise<ResponseData>).then(res => {
       const endTime = new Date().getTime();
@@ -37,7 +36,7 @@ describe('middleware-utils', () => {
 
   it('should delay the response', done => {
     const delay = MiddlewareUtils.delayMiddleware(100);
-    const result = delay({} as HandlerArgument, 'delayed' as ResponseData);
+    const result = delay({} as MockRequest, 'delayed' as ResponseData);
     const startTime = new Date().getTime();
 
     (result as Promise<String>).then(res => {
@@ -52,7 +51,7 @@ describe('middleware-utils', () => {
   it('should have a random failure rate', done => {
     MathMock.fixRandom(0.2);
     const delay = MiddlewareUtils.failurerateMiddleware(0.3);
-    const result = delay({} as HandlerArgument, 'normal-response' as ResponseData);
+    const result = delay({} as MockRequest, 'normal-response' as ResponseData);
 
     (result as Promise<ResponseData>).then(res => {
       expect(res.status).toBe(500);
@@ -63,7 +62,7 @@ describe('middleware-utils', () => {
   it('should have a random failure rate2', done => {
     MathMock.fixRandom(0.4);
     const delay = MiddlewareUtils.failurerateMiddleware(0.3);
-    const result = delay({} as HandlerArgument, 'normal-response' as ResponseData);
+    const result = delay({} as MockRequest, 'normal-response' as ResponseData);
 
     (result as Promise<String>).then(res => {
       expect(res).toBe('normal-response');
@@ -74,7 +73,7 @@ describe('middleware-utils', () => {
   it('should support custom error response', done => {
     MathMock.fixRandom(0.2);
     const delay = MiddlewareUtils.failurerateMiddleware(0.3, { status: 1337 });
-    const result = delay({} as HandlerArgument, 'normal-response' as ResponseData);
+    const result = delay({} as MockRequest, 'normal-response' as ResponseData);
 
     (result as Promise<ResponseData>).then(res => {
       expect(res.status).toBe(1337);
@@ -82,14 +81,9 @@ describe('middleware-utils', () => {
     });
   });
 
-  it('should support null values in JSON', done => {
-    const value: JSONValue = { data: null };
-    done();
-  });
-
   it('should should log the request', () => {
     const logging = MiddlewareUtils.loggingMiddleware();
-    logging({ init: { headers: {} } } as HandlerArgument, 'resp' as ResponseData);
+    logging({ init: { headers: {} } } as MockRequest, 'resp' as ResponseData);
 
     expect(console.log).toBeCalledTimes(5);
   });

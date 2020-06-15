@@ -1,4 +1,4 @@
-import { HandlerArgument, ResponseData, RouteMatcher } from './types';
+import { MockRequest, ResponseData, RouteMatcher } from './types';
 
 const allMatcher: RouteMatcher = {
   test(input: RequestInfo, init?: RequestInit) {
@@ -7,7 +7,7 @@ const allMatcher: RouteMatcher = {
 };
 
 export interface Entry {
-  request: HandlerArgument;
+  request: MockRequest;
   response: ResponseData;
 }
 
@@ -19,10 +19,7 @@ export default class SpyMiddleware {
     this.entries = [];
   }
 
-  middleware(
-    request: HandlerArgument,
-    response: ResponseData
-  ): ResponseData | Promise<ResponseData> {
+  middleware(request: MockRequest, response: ResponseData): ResponseData | Promise<ResponseData> {
     const entry = { request, response };
     this.entries.unshift(entry);
     return response;

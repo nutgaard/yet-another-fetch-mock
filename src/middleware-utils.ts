@@ -1,4 +1,4 @@
-import { HandlerArgument, Middleware, ResponseData } from './types';
+import { MockRequest, Middleware, ResponseData } from './types';
 
 const defaultFailure: ResponseData = {
   status: 500,
@@ -7,7 +7,7 @@ const defaultFailure: ResponseData = {
 
 export default class MiddlewareUtils {
   static combine(...middlewares: Middleware[]): Middleware {
-    return (request: HandlerArgument, response: ResponseData) => {
+    return (request: MockRequest, response: ResponseData) => {
       return middlewares.reduce(
         (currentResponse, middleware) => currentResponse.then(resp => middleware(request, resp)),
         Promise.resolve(response)
@@ -16,7 +16,7 @@ export default class MiddlewareUtils {
   }
 
   static delayMiddleware(delayMs: number): Middleware {
-    return (request: HandlerArgument, response: ResponseData) => {
+    return (request: MockRequest, response: ResponseData) => {
       return new Promise<ResponseData>(resolve => {
         setTimeout(() => resolve(response), delayMs);
       });
@@ -27,7 +27,7 @@ export default class MiddlewareUtils {
     probabilityOfFailure: number,
     failure: ResponseData = defaultFailure
   ): Middleware {
-    return (request: HandlerArgument, response: ResponseData) => {
+    return (request: MockRequest, response: ResponseData) => {
       return new Promise<ResponseData>(resolve => {
         const rnd = Math.random();
 

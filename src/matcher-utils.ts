@@ -81,6 +81,10 @@ mock.get('/path-without-queryparam', ({ queryParams }) => {
     return httpMethodHelper(matcherUrl, 'GET');
   }
 
+  static head(matcherUrl: MatcherUrl): RouteMatcher {
+    return httpMethodHelper(matcherUrl, 'HEAD');
+  }
+
   static post(matcherUrl: MatcherUrl): RouteMatcher {
     return httpMethodHelper(matcherUrl, 'POST');
   }
@@ -91,5 +95,17 @@ mock.get('/path-without-queryparam', ({ queryParams }) => {
 
   static del(matcherUrl: MatcherUrl): RouteMatcher {
     return httpMethodHelper(matcherUrl, 'DELETE');
+  }
+
+  static connect(matcherUrl: MatcherUrl): RouteMatcher {
+    return httpMethodHelper(matcherUrl, 'CONNECT');
+  }
+
+  static options(matcherUrl: MatcherUrl): RouteMatcher {
+    return httpMethodHelper(matcherUrl, 'OPTIONS');
+  }
+
+  static patch(matcherUrl: MatcherUrl): RouteMatcher {
+    return httpMethodHelper(matcherUrl, 'PATCH');
   }
 }

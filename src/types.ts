@@ -1,8 +1,7 @@
-export type Opaque<K, T> = T & { __TYPE__: K };
+import MockContext from './mock-context';
+export { default as MockContext } from './mock-context';
 
-export type JSONValue = null | string | number | boolean | JSONObject | JSONArray;
-export type JSONObject = { [member: string]: JSONValue };
-export interface JSONArray extends Array<JSONValue> {}
+export type Opaque<K, T> = T & { __TYPE__: K };
 
 export type HttpMethod =
   | 'GET'
@@ -13,16 +12,6 @@ export type HttpMethod =
   | 'CONNECT'
   | 'OPTIONS'
   | 'PATCH';
-
-export interface HandlerArgument {
-  input: RequestInfo;
-  init?: RequestInit;
-  body?: any;
-  pathParams: any;
-  queryParams: any;
-  url: RequestUrl;
-  method: HttpMethod;
-}
 
 export interface RouteMatcher {
   test: (input: RequestInfo, init?: RequestInit) => boolean;
@@ -36,22 +25,33 @@ export interface ResponseData {
   statusText?: string;
 }
 
-export type MockHandler =
-  | ((args: HandlerArgument) => Promise<ResponseData>)
-  | ((args: HandlerArgument) => JSONValue)
-  | JSONValue;
+export interface MockRequest {
+  input: RequestInfo;
+  init?: RequestInit;
+  body?: any;
+  pathParams: any;
+  queryParams: any;
+  url: RequestUrl;
+  method: HttpMethod;
+}
+export type HandlerResponseElement = (data: ResponseData) => Promise<ResponseData>;
+export type MockResponse = (...elements: Array<HandlerResponseElement>) => Promise<ResponseData>;
+export type MockHandler = (
+  req: MockRequest,
+  res: MockResponse,
+  ctx: MockContext
+) => Promise<ResponseData>;
 
-export type MockHandlerFunction = (args: HandlerArgument) => Promise<ResponseData>;
 export type RequestUrl = Opaque<'RequestUrl', string>;
 export type MatcherUrl = Opaque<'MatcherUrl', string>;
 
 export interface Route {
   matcher: RouteMatcher;
-  handler: MockHandlerFunction;
+  handler: MockHandler;
 }
 
 export type Middleware = (
-  request: HandlerArgument,
+  request: MockRequest,
   response: ResponseData
 ) => ResponseData | Promise<ResponseData>;
 
