@@ -1,4 +1,4 @@
-import { HandlerRequest, HandlerResponseElement, ResponseData } from './types';
+import { MockRequest, HandlerResponseElement, ResponseData } from './types';
 
 async function delay(ms: number): Promise<any> {
   return new Promise<ResponseData>(resolve => {
@@ -7,11 +7,11 @@ async function delay(ms: number): Promise<any> {
 }
 
 class HandlerContext {
-  private req: HandlerRequest;
+  private req: MockRequest;
   private realFetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
 
   constructor(
-    req: HandlerRequest,
+    req: MockRequest,
     realFetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>
   ) {
     this.req = req;

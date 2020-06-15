@@ -1,4 +1,4 @@
-import HandlerContext from './handler-context';
+import MockContext from './handler-context';
 
 export type Opaque<K, T> = T & { __TYPE__: K };
 
@@ -24,7 +24,7 @@ export interface ResponseData {
   statusText?: string;
 }
 
-export interface HandlerRequest {
+export interface MockRequest {
   input: RequestInfo;
   init?: RequestInit;
   body?: any;
@@ -34,11 +34,11 @@ export interface HandlerRequest {
   method: HttpMethod;
 }
 export type HandlerResponseElement = (data: ResponseData) => Promise<ResponseData>;
-export type HandlerResponse = (...elements: Array<HandlerResponseElement>) => Promise<ResponseData>;
-export type Handler = (
-  req: HandlerRequest,
-  res: HandlerResponse,
-  ctx: HandlerContext
+export type MockResponse = (...elements: Array<HandlerResponseElement>) => Promise<ResponseData>;
+export type MockHandler = (
+  req: MockRequest,
+  res: MockResponse,
+  ctx: MockContext
 ) => Promise<ResponseData>;
 
 export type RequestUrl = Opaque<'RequestUrl', string>;
@@ -46,11 +46,11 @@ export type MatcherUrl = Opaque<'MatcherUrl', string>;
 
 export interface Route {
   matcher: RouteMatcher;
-  handler: Handler;
+  handler: MockHandler;
 }
 
 export type Middleware = (
-  request: HandlerRequest,
+  request: MockRequest,
   response: ResponseData
 ) => ResponseData | Promise<ResponseData>;
 

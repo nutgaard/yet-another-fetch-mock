@@ -1,8 +1,8 @@
 import {
   Configuration,
-  Handler,
-  HandlerRequest,
-  HandlerResponse,
+  MockHandler,
+  MockRequest,
+  MockResponse,
   HandlerResponseElement,
   HttpMethod,
   MatcherUrl,
@@ -49,39 +49,39 @@ class FetchMock {
     this.scope.fetch = this.realFetch;
   }
 
-  get(url: string, handler: Handler): void {
+  get(url: string, handler: MockHandler): void {
     this.mock(MatcherUtils.get(url as MatcherUrl), handler);
   }
 
-  head(url: string, handler: Handler): void {
+  head(url: string, handler: MockHandler): void {
     this.mock(MatcherUtils.head(url as MatcherUrl), handler);
   }
 
-  post(url: string, handler: Handler): void {
+  post(url: string, handler: MockHandler): void {
     this.mock(MatcherUtils.post(url as MatcherUrl), handler);
   }
 
-  put(url: string, handler: Handler): void {
+  put(url: string, handler: MockHandler): void {
     this.mock(MatcherUtils.put(url as MatcherUrl), handler);
   }
 
-  delete(url: string, handler: Handler): void {
+  delete(url: string, handler: MockHandler): void {
     this.mock(MatcherUtils.del(url as MatcherUrl), handler);
   }
 
-  connect(url: string, handler: Handler): void {
+  connect(url: string, handler: MockHandler): void {
     this.mock(MatcherUtils.connect(url as MatcherUrl), handler);
   }
 
-  options(url: string, handler: Handler): void {
+  options(url: string, handler: MockHandler): void {
     this.mock(MatcherUtils.options(url as MatcherUrl), handler);
   }
 
-  patch(url: string, handler: Handler): void {
+  patch(url: string, handler: MockHandler): void {
     this.mock(MatcherUtils.patch(url as MatcherUrl), handler);
   }
 
-  mock(matcher: RouteMatcher, handler: Handler) {
+  mock(matcher: RouteMatcher, handler: MockHandler) {
     this.routes.push({ matcher, handler });
   }
 
@@ -112,8 +112,8 @@ class FetchMock {
       }
     } else {
       pathParams = findPathParams(url, matchingRoute.matcher.matcherUrl);
-      const req: HandlerRequest = { input, init, url, method, pathParams, queryParams, body };
-      const res: HandlerResponse = async (...args: Array<HandlerResponseElement>) => {
+      const req: MockRequest = { input, init, url, method, pathParams, queryParams, body };
+      const res: MockResponse = async (...args: Array<HandlerResponseElement>) => {
         let responseData: ResponseData = {};
         for (const responseElement of args) {
           responseData = await responseElement(responseData);
