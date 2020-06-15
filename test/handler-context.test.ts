@@ -1,10 +1,10 @@
 import 'isomorphic-fetch';
 import { RequestUrl } from '../src/types';
-import HandlerContext from '../src/handler-context';
+import MockContext from '../src/mock-context';
 
-describe('HandlerContext', () => {
+describe('MockContext', () => {
   const realFetch: (input: RequestInfo, init?: RequestInit) => Promise<Response> = jest.fn();
-  const handlerContext: HandlerContext = new HandlerContext(
+  const handlerContext: MockContext = new MockContext(
     {
       input: 'http://mock.url',
       url: 'http://mock.url' as RequestUrl,

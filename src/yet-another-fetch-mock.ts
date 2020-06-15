@@ -19,7 +19,7 @@ import {
   findRequestUrl
 } from './internal-utils';
 import MatcherUtils from './matcher-utils';
-import HandlerContext from './handler-context';
+import MockContext from './mock-context';
 
 const defaultConfiguration: Configuration = {
   enableFallback: true,
@@ -121,7 +121,7 @@ class FetchMock {
 
         return responseData;
       };
-      const ctx = new HandlerContext(req, this.realFetch);
+      const ctx = new MockContext(req, this.realFetch);
 
       response = matchingRoute.handler(req, res, ctx);
     }

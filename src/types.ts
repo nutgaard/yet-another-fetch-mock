@@ -1,4 +1,5 @@
-import MockContext from './handler-context';
+import MockContext from './mock-context';
+export { default as MockContext } from './mock-context';
 
 export type Opaque<K, T> = T & { __TYPE__: K };
 

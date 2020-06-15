@@ -6,7 +6,7 @@ async function delay(ms: number): Promise<any> {
   });
 }
 
-class HandlerContext {
+class MockContext {
   private req: MockRequest;
   private realFetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
 
@@ -82,4 +82,4 @@ class HandlerContext {
   }
 }
 
-export default HandlerContext;
+export default MockContext;
