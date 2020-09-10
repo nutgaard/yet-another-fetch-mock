@@ -57,6 +57,7 @@ export type Middleware = (
 
 export interface Configuration {
   enableFallback: boolean;
+  suppressRealFetchWarning: boolean;
   ignoreMiddlewareIfFallback: boolean;
   middleware: Middleware;
 }
