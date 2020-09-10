@@ -1,0 +1,39 @@
+name: Test, build and publish
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  CI: true
+jobs:
+  test-build-publish:
+    name: Test and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install dependencies
+        run: npm ci
+      - name: Test
+        run: npm run test:prod
+      - name: Build
+        run: npm run build
+      - name: Report coverage
+        run: npm run report-coverage
+      - name: Publish docs
+        run: npm run deploy-docs
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: Publish package
+        run: npm run semantic-release
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
