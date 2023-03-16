@@ -13,27 +13,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/cache@v1
+      - uses: actions/setup-node@v3
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          node-version: 16
+          cache: 'npm'
       - name: Install dependencies
         run: npm ci
       - name: Test
-        run: npm run test:prod
+        run: npm run test
       - name: Build
         run: npm run build
       - name: Report coverage
-        run: npm run report-coverage
+        uses: codecov/codecov-action@v3
       - name: Publish docs
-        run: npm run deploy-docs
+        uses: crazy-max/ghaction-github-pages@v2
+        with:
+          build_dir: docs
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish package
-        run: npm run semantic-release
+        run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}

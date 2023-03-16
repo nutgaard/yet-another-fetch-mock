@@ -1,5 +1,5 @@
-import MockContext from './mock-context';
-export { default as MockContext } from './mock-context';
+import MockContext from './mock-context.js';
+export { default as MockContext } from './mock-context.js';
 
 export type Opaque<K, T> = T & { __TYPE__: K };
 

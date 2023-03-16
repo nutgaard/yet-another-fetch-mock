@@ -1,13 +1,11 @@
-import { HttpMethod, MatcherUrl, RequestUrl, RouteMatcher } from './types';
-import { findRequestMethod, findRequestUrl } from './internal-utils';
-import { Key } from 'path-to-regexp';
-
-const pathToRegex = require('path-to-regexp');
+import { HttpMethod, MatcherUrl, RequestUrl, RouteMatcher } from './types.js';
+import { createUrlRegex, findRequestMethod, findRequestUrl } from './internal-utils.js';
+import { pathToRegexp, Key } from 'path-to-regexp';
 
 const heuristics = [/\?\w=\w/, /\&\w=\w/, /\?\w$/, /\&\w$/];
 function containsQueryParams(matcherUrl: string): boolean {
   if (matcherUrl.includes('?')) {
-    return heuristics.some(heuristic => heuristic.test(matcherUrl));
+    return heuristics.some((heuristic) => heuristic.test(matcherUrl));
   }
   return false;
 }
@@ -29,7 +27,7 @@ export default class MatcherUtils {
           Boolean(true)
         );
       },
-      matcherUrl: matchers.map(matcher => matcher.matcherUrl).find(url => !!url)
+      matcherUrl: matchers.map((matcher) => matcher.matcherUrl).find((url) => !!url),
     };
   }
 
@@ -37,7 +35,7 @@ export default class MatcherUtils {
     return {
       test: (input: RequestInfo, init?: RequestInit) => {
         return httpMethod === findRequestMethod(input, init).toUpperCase();
-      }
+      },
     };
   }
 
@@ -67,13 +65,12 @@ mock.get('/path-without-queryparam', ({ queryParams }) => {
 
         const url = findRequestUrl(input, init);
         const urlWithoutQueryParams: RequestUrl = url.split('?')[0] as RequestUrl;
-        const keys: Key[] = [];
-        const matcherRegex: RegExp = pathToRegex(matcherUrl, keys);
+        const [matcherRegex, keys] = createUrlRegex(matcherUrl);
         const match: RegExpExecArray | null = matcherRegex.exec(urlWithoutQueryParams);
 
         return !!match;
       },
-      matcherUrl: matcherUrl as MatcherUrl
+      matcherUrl: matcherUrl as MatcherUrl,
     };
   }
 

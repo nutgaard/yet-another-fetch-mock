@@ -1,7 +1,7 @@
-import { MockRequest, HandlerResponseElement, ResponseData } from './types';
+import { MockRequest, HandlerResponseElement, ResponseData } from './types.js';
 
-async function delay(ms: number): Promise<any> {
-  return new Promise<ResponseData>(resolve => {
+async function delay(ms: number): Promise<void> {
+  return new Promise<void>((resolve) => {
     setTimeout(() => resolve(), ms);
   });
 }

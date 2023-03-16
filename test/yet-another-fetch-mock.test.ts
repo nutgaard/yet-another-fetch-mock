@@ -1,8 +1,10 @@
 import 'isomorphic-fetch';
+import { Request } from 'node-fetch';
+import { describe, it, beforeEach, afterEach, expect } from 'vitest';
 import FetchMock from '../src/yet-another-fetch-mock';
 
 function fetchToJson(url: string, options?: RequestInit) {
-  return fetch(url, options).then(resp => resp.json());
+  return fetch(url, options).then((resp) => resp.json());
 }
 
 describe('FetchMock', () => {
@@ -15,34 +17,31 @@ describe('FetchMock', () => {
     mock.restore();
   });
 
-  it('should match simple route', done => {
+  it('should match simple route', async () => {
     mock.get('/test', (req, res, ctx) => res(ctx.json({ key: 'value' })));
 
-    fetchToJson('/test').then(json => {
+    await fetchToJson('/test').then((json) => {
       expect(json.key).toBe('value');
-      done();
     });
   });
 
-  it('should support fallback', done => {
+  it('should support fallback', async () => {
     mock.get('*', (req, res, ctx) => res(ctx.json({ key: 'value' })));
-    fetchToJson('/any-url-here').then(json => {
+    await fetchToJson('/any-url-here').then((json) => {
       expect(json.key).toBe('value');
-      done();
     });
   });
 
-  it('should should set statusCode and statusText', done => {
+  it('should should set statusCode and statusText', async () => {
     mock.get('/status', (req, res, ctx) => res(ctx.json({ key: 'value' })));
-    fetch('/status').then(resp => {
+    await fetch('/status').then((resp) => {
       expect(resp.status).toBe(200);
       expect(resp.statusText).toBe('OK');
       expect(resp.ok).toBe(true);
-      done();
     });
   });
 
-  it('should pass along body, path-params and query-params', done => {
+  it('should pass along body, path-params and query-params', async () => {
     const payload = { payload: 'my custom payload' };
     mock.post('/test/:id/:app', (req, res, ctx) => {
       expect(req.url).toBe('/test/123/testapp?name=abba&age=99');
@@ -55,29 +54,25 @@ describe('FetchMock', () => {
       return res(ctx.json({ key: 'value' }));
     });
 
-    fetchToJson('/test/123/testapp?name=abba&age=99', {
+    await fetchToJson('/test/123/testapp?name=abba&age=99', {
       method: 'POST',
-      body: JSON.stringify(payload)
-    })
-      .then(json => expect(json.key).toBe('value'))
-      .then(() => done());
+      body: JSON.stringify(payload),
+    }).then((json) => expect(json.key).toBe('value'));
   });
 
-  it('should pass along non-json body', done => {
+  it('should pass along non-json body', async () => {
     mock.post('/test/:id/:app', (req, res, ctx) => {
       expect(req.body).toBe('randompayload');
       return res(ctx.json({ key: 'value' }));
     });
 
-    fetchToJson('/test/123/testapp?name=abba&age=99', {
+    await fetchToJson('/test/123/testapp?name=abba&age=99', {
       method: 'POST',
-      body: 'randompayload'
-    })
-      .then(json => expect(json.key).toBe('value'))
-      .then(() => done());
+      body: 'randompayload',
+    }).then((json) => expect(json.key).toBe('value'));
   });
 
-  it('should match other HTTP-verbs', done => {
+  it('should match other HTTP-verbs', async () => {
     mock.get('/get', (req, res, ctx) => res(ctx.json({ key: 'get' })));
     mock.head('/head', (req, res, ctx) => res(ctx.json({ key: 'head' })));
     mock.post('/post', (req, res, ctx) => res(ctx.json({ key: 'post' })));
@@ -87,32 +82,32 @@ describe('FetchMock', () => {
     mock.options('/options', (req, res, ctx) => res(ctx.json({ key: 'options' })));
     mock.patch('/patch', (req, res, ctx) => res(ctx.json({ key: 'patch' })));
 
-    const getReq = fetchToJson('/get', { method: 'GET' }).then(json =>
+    const getReq = fetchToJson('/get', { method: 'GET' }).then((json) =>
       expect(json.key).toBe('get')
     );
-    const headReq = fetchToJson('/head', { method: 'HEAD' }).then(json =>
+    const headReq = fetchToJson('/head', { method: 'HEAD' }).then((json) =>
       expect(json.key).toBe('head')
     );
-    const postReq = fetchToJson('/post', { method: 'POST' }).then(json =>
+    const postReq = fetchToJson('/post', { method: 'POST' }).then((json) =>
       expect(json.key).toBe('post')
     );
-    const putReq = fetchToJson('/put', { method: 'PUT' }).then(json =>
+    const putReq = fetchToJson('/put', { method: 'PUT' }).then((json) =>
       expect(json.key).toBe('put')
     );
-    const deleteReq = fetchToJson('/delete', { method: 'DELETE' }).then(json =>
+    const deleteReq = fetchToJson('/delete', { method: 'DELETE' }).then((json) =>
       expect(json.key).toBe('delete')
     );
-    const connectReq = fetchToJson('/connect', { method: 'CONNECT' }).then(json =>
+    const connectReq = fetchToJson('/connect', { method: 'CONNECT' }).then((json) =>
       expect(json.key).toBe('connect')
     );
-    const optionsReq = fetchToJson('/options', { method: 'OPTIONS' }).then(json =>
+    const optionsReq = fetchToJson('/options', { method: 'OPTIONS' }).then((json) =>
       expect(json.key).toBe('options')
     );
-    const patchReq = fetchToJson('/patch', { method: 'PATCH' }).then(json =>
+    const patchReq = fetchToJson('/patch', { method: 'PATCH' }).then((json) =>
       expect(json.key).toBe('patch')
     );
 
-    Promise.all([
+    await Promise.all([
       getReq,
       headReq,
       postReq,
@@ -120,24 +115,23 @@ describe('FetchMock', () => {
       deleteReq,
       connectReq,
       optionsReq,
-      patchReq
-    ]).then(() => done());
+      patchReq,
+    ]);
   });
 
-  it('should support custom matcher function', done => {
+  it('should support custom matcher function', async () => {
     mock.mock({ test: () => true }, (req, res, ctx) => res(ctx.json({ key: 'value' })));
 
-    fetchToJson('/test/123/testapp?name=abba&age=99')
-      .then(json => expect(json.key).toBe('value'))
-      .then(() => done());
+    await fetchToJson('/test/123/testapp?name=abba&age=99').then((json) =>
+      expect(json.key).toBe('value')
+    );
   });
 
-  it('should should support the Request', done => {
+  it('should should support the Request', async () => {
     mock.get('/test', (req, res, ctx) => res(ctx.json({ key: 'value' })));
-    fetch(new Request('/test'))
-      .then(resp => resp.json())
-      .then(json => expect(json.key).toBe('value'))
-      .then(() => done());
+    await fetch(new Request('/test'))
+      .then((resp) => resp.json())
+      .then((json) => expect(json.key).toBe('value'));
   });
 
   it('should throw error if no route matches', () => {
@@ -153,69 +147,66 @@ describe('FetchMock', () => {
     expect(() => mock.post(1231 as any, (req, res) => res())).toThrow();
   });
 
-  it('should support fallback to realFetch', done => {
+  it('should support fallback to realFetch', async () => {
     mock.get('/testurl', (req, res, ctx) => res(ctx.json({ num: 'testurl' })));
 
-    const mocked = fetchToJson('/testurl').then(json => expect(json.num).toBe('testurl'));
-    const fallback = fetchToJson('https://xkcd.com/info.0.json').then(json =>
+    const mocked = fetchToJson('/testurl').then((json) => expect(json.num).toBe('testurl'));
+    const fallback = fetchToJson('https://xkcd.com/info.0.json').then((json) =>
       expect(json.num).toBeDefined()
     );
 
-    Promise.all([mocked, fallback]).then(() => done());
+    await Promise.all([mocked, fallback]);
   });
 
-  it('should remove all mocks on reset', done => {
+  it('should remove all mocks on reset', async () => {
     mock.get('https://xkcd.com/info.0.json', (req, res, ctx) => res(ctx.json({ num: 'testurl' })));
 
-    const mocked = fetchToJson('https://xkcd.com/info.0.json').then(json =>
+    const mocked = fetchToJson('https://xkcd.com/info.0.json').then((json) =>
       expect(json.num).toBe('testurl')
     );
 
     mock.reset();
 
-    const fallback = fetchToJson('https://xkcd.com/info.0.json').then(json =>
+    const fallback = fetchToJson('https://xkcd.com/info.0.json').then((json) =>
       expect(json.num).toBeDefined()
     );
 
-    Promise.all([mocked, fallback]).then(() => done());
+    await Promise.all([mocked, fallback]);
   });
 
-  it('should support delayed responses', done => {
+  it('should support delayed responses', async () => {
     mock.get('/test', (req, res, ctx) => res(ctx.delay(200), ctx.json({ key: 'delayed' })));
     mock.get('/test2', (req, res, ctx) => res(ctx.delay(200), ctx.json({ key: 'delayed2' })));
     const startTime = new Date().getTime();
 
-    Promise.all([fetchToJson('/test'), fetchToJson('/test2')]).then(json => {
+    await Promise.all([fetchToJson('/test'), fetchToJson('/test2')]).then((json) => {
       const endTime = new Date().getTime();
       expect(json[0].key).toBe('delayed');
       expect(json[1].key).toBe('delayed2');
       expect(endTime - startTime).toBeGreaterThan(190);
-      done();
     });
   });
 
-  it('should supportd combinding delay and handlerargs', done => {
+  it('should supportd combinding delay and handlerargs', async () => {
     mock.get('/test/:id', (req, res, ctx) =>
       res(ctx.delay(1000), ctx.json({ requestId: req.pathParams.id }))
     );
 
-    fetchToJson('/test/1234').then(json => {
+    await fetchToJson('/test/1234').then((json) => {
       expect(json.requestId).toBe('1234');
-      done();
     });
   });
 
-  it('should support responding with status codes', done => {
+  it('should support responding with status codes', async () => {
     mock.get('/error', (req, res, ctx) => res(ctx.status(404)));
 
-    fetch('/error').then(resp => {
+    await fetch('/error').then((resp) => {
       expect(resp.ok).toBe(false);
       expect(resp.status).toBe(404);
-      done();
     });
   });
 
-  it('should be able to combine response utils', done => {
+  it('should be able to combine response utils', async () => {
     mock.get('/combine', (req, res, ctx) => res(ctx.status(201), ctx.json({ key: 'value' })));
 
     mock.get('/combine2', (req, res, ctx) =>
@@ -223,44 +214,42 @@ describe('FetchMock', () => {
     );
 
     const first = fetch('/combine')
-      .then(resp => {
+      .then((resp) => {
         expect(resp.status).toBe(201);
         return resp.json();
       })
-      .then(json => {
+      .then((json) => {
         expect(json.key).toBe('value');
       });
 
     const second = fetch('/combine2')
-      .then(resp => {
+      .then((resp) => {
         expect(resp.status).toBe(202);
         expect(resp.statusText).toBe('Its ok');
         return resp.json();
       })
-      .then(json => {
+      .then((json) => {
         expect(json.key).toBe('value2');
       });
 
-    Promise.all([first, second]).then(() => done());
+    await Promise.all([first, second]);
   });
 
-  it('should be able to set headers', done => {
+  it('should be able to set headers', async () => {
     mock.get('/withheaders', (req, res, ctx) =>
       res(ctx.header('Content-Type', 'custom/type'), ctx.body(JSON.stringify({ key: 'value' })))
     );
 
-    fetch('/withheaders').then(resp => {
+    await fetch('/withheaders').then((resp) => {
       expect(resp.headers.get('Content-Type')).toBe('custom/type');
-      done();
     });
   });
 
-  it('should support lowercase httpverb', done => {
+  it('should support lowercase httpverb', async () => {
     mock.post('/lowercase', (req, res, ctx) => res(ctx.json({ key: 'BIG-CASE' })));
 
-    fetchToJson('/lowercase', { method: 'post' }).then(json => {
+    await fetchToJson('/lowercase', { method: 'post' }).then((json) => {
       expect(json.key).toBe('BIG-CASE');
-      done();
     });
   });
 });
