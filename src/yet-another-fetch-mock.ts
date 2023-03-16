@@ -9,32 +9,32 @@ import {
   RequestUrl,
   ResponseData,
   Route,
-  RouteMatcher
-} from './types';
+  RouteMatcher,
+} from './types.js';
 import {
   findBody,
   findPathParams,
   findQueryParams,
   findRequestMethod,
-  findRequestUrl
-} from './internal-utils';
-import MatcherUtils from './matcher-utils';
-import MockContext from './mock-context';
+  findRequestUrl,
+} from './internal-utils.js';
+import MatcherUtils from './matcher-utils.js';
+import MockContext from './mock-context.js';
 
 const defaultConfiguration: Configuration = {
   enableFallback: true,
   suppressRealFetchWarning: false,
   ignoreMiddlewareIfFallback: false,
-  middleware: (request, response) => response
+  middleware: (request, response) => response,
 };
 
 class FetchMock {
   private realFetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
   private configuration: Configuration;
   private routes: Route[];
-  private scope: GlobalFetch;
+  private scope: Window;
 
-  constructor(scope: GlobalFetch, configuration: Partial<Configuration>) {
+  constructor(scope: Window, configuration: Partial<Configuration>) {
     this.scope = scope;
     this.configuration = Object.assign({}, defaultConfiguration, configuration);
     this.realFetch = scope.fetch;
@@ -43,7 +43,18 @@ class FetchMock {
   }
 
   static configure(configuration: Partial<Configuration> = defaultConfiguration): FetchMock {
-    return new FetchMock(window, configuration);
+    return new FetchMock(FetchMock.getGlobal(), configuration);
+  }
+
+  private static getGlobal() {
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/globalThis
+    if (typeof globalThis !== 'undefined') return globalThis as any;
+
+    // IE11 fallback
+    if (typeof self !== 'undefined') return self as any;
+    if (typeof window !== 'undefined') return window as any;
+    if (typeof global !== 'undefined') return global as any;
+    throw new Error('Unable to locate globale object');
   }
 
   restore() {
@@ -130,7 +141,7 @@ class FetchMock {
     }
 
     return response
-      .then(resp =>
+      .then((resp) =>
         this.configuration.middleware(
           { input, init, url, method, queryParams, pathParams, body },
           resp
@@ -151,7 +162,7 @@ class FetchMock {
 
 export default FetchMock;
 
-export { default as MatcherUtils } from './matcher-utils';
-export { default as MiddlewareUtils } from './middleware-utils';
-export { default as SpyMiddleware } from './spy-middleware';
-export * from './types';
+export { default as MatcherUtils } from './matcher-utils.js';
+export { default as MiddlewareUtils } from './middleware-utils.js';
+export { default as SpyMiddleware, Entry } from './spy-middleware.js';
+export * from './types.js';

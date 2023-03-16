@@ -1,7 +1,6 @@
 # Yet-Another-Fetch-Mock
 
 [![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
-[![Travis](https://img.shields.io/travis/nutgaard/yet-another-fetch-mock.svg)](https://travis-ci.org/nutgaard/yet-another-fetch-mock)
 [![codecov](https://codecov.io/gh/nutgaard/yet-another-fetch-mock/branch/master/graph/badge.svg)](https://codecov.io/gh/nutgaard/yet-another-fetch-mock)
 [![dependencies Status](https://david-dm.org/nutgaard/yet-another-fetch-mock/status.svg)](https://david-dm.org/nutgaard/yet-another-fetch-mock)
 

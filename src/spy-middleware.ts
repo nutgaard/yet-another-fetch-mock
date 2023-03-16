@@ -1,9 +1,9 @@
-import { MockRequest, ResponseData, RouteMatcher } from './types';
+import { MockRequest, ResponseData, RouteMatcher } from './types.js';
 
 const allMatcher: RouteMatcher = {
   test(input: RequestInfo, init?: RequestInit) {
     return true;
-  }
+  },
 };
 
 export interface Entry {
@@ -30,11 +30,11 @@ export default class SpyMiddleware {
   }
 
   calls(matcher: RouteMatcher = allMatcher) {
-    return this.entries.filter(entry => matcher.test(entry.request.input, entry.request.init));
+    return this.entries.filter((entry) => matcher.test(entry.request.input, entry.request.init));
   }
 
   lastCall(matcher: RouteMatcher = allMatcher) {
-    return this.entries.find(entry => matcher.test(entry.request.input, entry.request.init));
+    return this.entries.find((entry) => matcher.test(entry.request.input, entry.request.init));
   }
 
   called(matcher: RouteMatcher = allMatcher) {

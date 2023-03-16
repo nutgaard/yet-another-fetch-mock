@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { findBody, findPathParams } from '../src/internal-utils';
 import { RequestUrl } from '../src/types';
 

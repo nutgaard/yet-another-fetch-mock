@@ -1,6 +1,6 @@
 {
   "name": "yet-another-fetch-mock",
-  "version": "4.0.0-beta.2",
+  "version": "4.1.0-alpha.1",
   "description": "",
   "keywords": [
     "fetch",
@@ -9,12 +9,6 @@
     "spy",
     "test"
   ],
-  "main": "dist/yet-another-fetch-mock.umd.js",
-  "module": "dist/yet-another-fetch-mock.es5.js",
-  "typings": "dist/types/yet-another-fetch-mock.d.ts",
-  "files": [
-    "dist"
-  ],
   "author": "Nicklas Utgaard",
   "repository": {
     "type": "git",
@@ -22,24 +16,30 @@
   },
   "license": "MIT",
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=16.0.0"
   },
+  "type": "module",
+  "main": "./dist/cjs/yet-another-fetch-mock.js",
+  "module": "./dist/esm/yet-another-fetch-mock.js",
+  "typings": "./dist/types/yet-another-fetch-mock.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/yet-another-fetch-mock.d.ts",
+      "require": "./dist/cjs/yet-another-fetch-mock.js",
+      "import": "./dist/esm/yet-another-fetch-mock.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
-    "prebuild": "rimraf dist",
-    "build": "tsc --module commonjs && rollup -c rollup.config.ts && typedoc --out docs --target es6 --theme minimal --mode file src",
-    "start": "rollup -c rollup.config.ts -w",
-    "test": "jest --coverage",
-    "test:watch": "jest --coverage --watch",
-    "test:prod": "npm run lint && npm run test -- --no-cache",
-    "deploy-docs": "ts-node tools/gh-pages-publish",
-    "report-coverage": "codecov",
+    "build": "npm run build:lib && npm run build:docs",
+    "build:lib": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json",
+    "build:docs": "typedoc --out docs src/yet-another-fetch-mock.ts",
+    "test": "vitest run --coverage",
     "commit": "git-cz",
-    "semantic-release": "semantic-release",
-    "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
     "precommit": "lint-staged",
-    "travis-deploy-once": "travis-deploy-once",
-    "prepush": "npm run test:prod && npm run build",
+    "prepush": "npm run test && npm run build",
     "commitmsg": "commitlint -E HUSKY_GIT_PARAMS"
   },
   "lint-staged": {
@@ -53,33 +53,6 @@
       "path": "node_modules/cz-conventional-changelog"
     }
   },
-  "jest": {
-    "transform": {
-      ".(ts|tsx)": "ts-jest"
-    },
-    "testEnvironment": "jsdom",
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ],
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "/test/"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 90,
-        "functions": 95,
-        "lines": 95,
-        "statements": 95
-      }
-    },
-    "collectCoverageFrom": [
-      "src/*.{js,ts}"
-    ]
-  },
   "prettier": {
     "semi": true,
     "singleQuote": true
@@ -90,48 +63,24 @@
     ]
   },
   "devDependencies": {
-    "@commitlint/cli": "^8.2.0",
-    "@commitlint/config-conventional": "^8.2.0",
-    "@types/isomorphic-fetch": "0.0.35",
-    "@types/jest": "^23.3.2",
-    "@types/lodash.curry": "^4.1.5",
-    "@types/node": "^10.11.0",
-    "@types/path-to-regexp": "^1.7.0",
-    "@types/query-string": "^5.1.0",
-    "codecov": "^3.2.0",
-    "colors": "^1.3.2",
-    "commitizen": "^4.0.3",
-    "cross-env": "^5.2.0",
-    "cz-conventional-changelog": "^2.1.0",
-    "husky": "^1.0.1",
-    "isomorphic-fetch": "^2.2.1",
-    "jest": "^24.1.0",
-    "jest-config": "^24.1.0",
-    "lint-staged": "^8.0.0",
-    "lodash.camelcase": "^4.3.0",
-    "prettier": "^1.14.3",
-    "prompt": "^1.0.0",
-    "replace-in-file": "^3.4.2",
-    "rimraf": "^2.6.2",
-    "rollup": "^0.67.0",
-    "rollup-plugin-commonjs": "^9.1.8",
-    "rollup-plugin-json": "^3.1.0",
-    "rollup-plugin-node-resolve": "^3.4.0",
-    "rollup-plugin-sourcemaps": "^0.4.2",
-    "rollup-plugin-typescript2": "^0.24.3",
-    "semantic-release": "^15.13.27",
-    "shelljs": "^0.8.3",
-    "travis-deploy-once": "^5.0.9",
-    "ts-jest": "^24.0.0",
-    "ts-node": "^7.0.1",
-    "tslint": "^5.11.0",
-    "tslint-config-prettier": "^1.15.0",
-    "tslint-config-standard": "^8.0.1",
-    "typedoc": "^0.15.0",
-    "typescript": "^3.0.3"
+    "@commitlint/cli": "^17.4.4",
+    "@commitlint/config-conventional": "^17.4.4",
+    "@types/isomorphic-fetch": "0.0.36",
+    "@types/node": "^18.15.3",
+    "@vitest/coverage-c8": "^0.29.3",
+    "colors": "^1.4.0",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^8.0.3",
+    "isomorphic-fetch": "^3.0.0",
+    "lint-staged": "^13.2.0",
+    "prettier": "^2.8.4",
+    "typedoc": "^0.23.26",
+    "typescript": "^4.9.5",
+    "vitest": "^0.29.3"
   },
   "dependencies": {
-    "path-to-regexp": "^2.1.0",
-    "query-string": "^5.1.0"
+    "path-to-regexp": "^6.2.1",
+    "query-string": "^8.1.0"
   }
 }

@@ -1,3 +1,4 @@
+import { describe, it, beforeAll, afterAll, expect, vi } from 'vitest';
 import { MockRequest, ResponseData } from '../src/types';
 import MathMock from './math-mock';
 import MiddlewareUtils from '../src/middleware-utils';
@@ -14,70 +15,65 @@ describe('middleware-utils', () => {
     ConsoleMock.teardown();
   });
 
-  it('should combine middlewares', done => {
+  it('should combine middlewares', async () => {
     MathMock.fixRandom(0.2);
-    const delay = jest.fn(MiddlewareUtils.delayMiddleware(100));
-    const failure = jest.fn(MiddlewareUtils.failurerateMiddleware(0.3, { status: 1337 }));
+    const delay = vi.fn(MiddlewareUtils.delayMiddleware(100));
+    const failure = vi.fn(MiddlewareUtils.failurerateMiddleware(0.3, { status: 1337 }));
     const startTime = new Date().getTime();
 
     const combined = MiddlewareUtils.combine(delay, failure);
     const result = combined({} as MockRequest, 'data' as ResponseData);
 
-    (result as Promise<ResponseData>).then(res => {
+    await (result as Promise<ResponseData>).then((res) => {
       const endTime = new Date().getTime();
       expect(endTime - startTime).toBeGreaterThanOrEqual(90);
 
       expect(res.status).toBe(1337);
       expect(delay).toHaveBeenCalledTimes(1);
       expect(failure).toHaveBeenCalledTimes(1);
-      done();
     });
   });
 
-  it('should delay the response', done => {
+  it('should delay the response', async () => {
     const delay = MiddlewareUtils.delayMiddleware(100);
     const result = delay({} as MockRequest, 'delayed' as ResponseData);
     const startTime = new Date().getTime();
 
-    (result as Promise<String>).then(res => {
+    await (result as Promise<String>).then((res) => {
       const endTime = new Date().getTime();
 
       expect(endTime - startTime).toBeGreaterThanOrEqual(90);
       expect(res).toBe('delayed');
-      done();
     });
   });
 
-  it('should have a random failure rate', done => {
+  it('should have a random failure rate', async () => {
     MathMock.fixRandom(0.2);
     const delay = MiddlewareUtils.failurerateMiddleware(0.3);
     const result = delay({} as MockRequest, 'normal-response' as ResponseData);
 
-    (result as Promise<ResponseData>).then(res => {
+    await (result as Promise<ResponseData>).then((res) => {
       expect(res.status).toBe(500);
-      done();
     });
   });
 
-  it('should have a random failure rate2', done => {
+  it('should have a random failure rate2', async () => {
     MathMock.fixRandom(0.4);
     const delay = MiddlewareUtils.failurerateMiddleware(0.3);
     const result = delay({} as MockRequest, 'normal-response' as ResponseData);
 
-    (result as Promise<String>).then(res => {
+    await (result as Promise<String>).then((res) => {
       expect(res).toBe('normal-response');
-      done();
     });
   });
 
-  it('should support custom error response', done => {
+  it('should support custom error response', async () => {
     MathMock.fixRandom(0.2);
     const delay = MiddlewareUtils.failurerateMiddleware(0.3, { status: 1337 });
     const result = delay({} as MockRequest, 'normal-response' as ResponseData);
 
-    (result as Promise<ResponseData>).then(res => {
+    await (result as Promise<ResponseData>).then((res) => {
       expect(res.status).toBe(1337);
-      done();
     });
   });
 
