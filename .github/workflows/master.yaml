@@ -11,11 +11,15 @@ jobs:
   test-build-publish:
     name: Test and build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [ 16, 18, 19 ]
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v3
+        name: Setup node ${{ matrix.node }}
         with:
-          node-version: 16
+          node-version: ${{ matrix.node }}
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
@@ -24,14 +28,17 @@ jobs:
       - name: Build
         run: npm run build
       - name: Report coverage
+        if: ${{ matrix.node == '18' }}
         uses: codecov/codecov-action@v3
       - name: Publish docs
+        if: ${{ matrix.node == '18' }}
         uses: crazy-max/ghaction-github-pages@v2
         with:
           build_dir: docs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish package
+        if: ${{ matrix.node == '18' }}
         run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
