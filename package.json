@@ -37,6 +37,7 @@
     "build:lib": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json",
     "build:docs": "typedoc --out docs src/yet-another-fetch-mock.ts",
     "test": "vitest run --coverage",
+    "testdev": "vitest watch --coverage ",
     "commit": "git-cz",
     "precommit": "lint-staged",
     "prepush": "npm run test && npm run build",

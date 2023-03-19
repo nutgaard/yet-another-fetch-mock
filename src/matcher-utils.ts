@@ -1,6 +1,5 @@
 import { HttpMethod, MatcherUrl, RequestUrl, RouteMatcher } from './types.js';
 import { createUrlRegex, findRequestMethod, findRequestUrl } from './internal-utils.js';
-import { pathToRegexp, Key } from 'path-to-regexp';
 
 const heuristics = [/\?\w=\w/, /\&\w=\w/, /\?\w$/, /\&\w$/];
 function containsQueryParams(matcherUrl: string): boolean {
