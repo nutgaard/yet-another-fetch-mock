@@ -30,7 +30,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "build": "npm run build:lib && npm run build:docs",
